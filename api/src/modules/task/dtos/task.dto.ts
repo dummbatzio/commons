@@ -1,8 +1,9 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { TaskType } from '../enums/task-type.enum';
 import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
 import { TaskStatus } from '../enums/task-status.enum';
 import { TaskCategoryDto } from './task-category.dto';
+import { TaskPriority } from '../enums/task-priority.enum';
 
 @ObjectType()
 export class TaskDto extends BaseAuditDto {
@@ -19,12 +20,15 @@ export class TaskDto extends BaseAuditDto {
   public type: TaskType;
 
   @Field(() => [TaskCategoryDto], { nullable: true })
-  categories: TaskCategoryDto[];
+  public categories: TaskCategoryDto[];
+
+  @Field()
+  public priority: TaskPriority;
 
   @Field()
   public expense: number;
 
-  @Field()
+  @Field(() => Float)
   public factor: number;
 
   @Field({ nullable: true })

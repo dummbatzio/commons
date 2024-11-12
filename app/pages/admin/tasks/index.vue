@@ -14,6 +14,6 @@ const tasks = computed(() => data.value?.tasks.items)
                 <TasksAddSheet @success="refresh" />
             </template>
         </Headline>
-        <TasksList :tasks="tasks" />
+        <TasksList :tasks="tasks" @refresh="refresh" />
     </Container>
 </template>

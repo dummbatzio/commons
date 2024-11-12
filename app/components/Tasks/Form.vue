@@ -4,13 +4,13 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod';
 import type { Task } from '~/types';
 import { Button } from '../ui/button';
-import { toast } from '../ui/toast';
 
 interface TaskProps {
     task?: Task
+    loading?: boolean,
 }
 const { task } = defineProps<TaskProps>()
-const emit = defineEmits(['success'])
+const emit = defineEmits(['submit'])
 
 const comboboxSchema =
     z.object({
@@ -19,47 +19,27 @@ const comboboxSchema =
     })
 const schema = toTypedSchema(
     z.object({
+        id: z.string().uuid().optional(),
         title: z.string(),
-        description: z.string().optional(),
+        description: z.string().nullable(),
         expense: z.number().positive(),
         factor: z.number().positive(),
-        due: z.string().datetime().optional(),
+        due: z.string().nullable(),
         categories: z.array(comboboxSchema).optional(),
-        type: z.string()
+        type: z.string().nullable()
     })
 )
 
-const loading = ref(false);
 const { values, setFieldValue, handleSubmit } = useForm({
-    validationSchema: schema
+    validationSchema: schema,
+    initialValues: {
+        ...task,
+        due: null,
+        categories: task?.categories?.map(c => ({ value: c.id, label: c.name }))
+    }
 })
 const onSubmit = handleSubmit(async (values, props) => {
-    const { categories, ...taskData } = values
-    const { resetForm } = props
-
-    loading.value = true
-
-    try {
-        await GqlCreateTask({
-            input: {
-                ...taskData,
-                categoryIds: categories?.map(tc => tc.value)
-            }
-        })
-
-        toast({
-            title: `${taskData.title}`,
-            description: 'Du hast eine neue Aufgabe erstellt.',
-        });
-
-        await resetForm()
-
-        emit('success')
-    } catch (error) {
-        console.log(error)
-    } finally {
-        loading.value = false
-    }
+    emit('submit', values, props)
 })
 
 const createCategory = async (name: string) => {
@@ -74,6 +54,7 @@ const createCategory = async (name: string) => {
 
 <template>
     <form @submit="onSubmit">
+        <input name="id" type="hidden" readonly />
         <div class="grid gap-4">
             <FormField v-slot="{ componentField }" name="title">
                 <FormItem class="grid gap">
@@ -84,7 +65,15 @@ const createCategory = async (name: string) => {
                     <FormMessage class="text-xs" />
                 </FormItem>
             </FormField>
-            <div>TipTapDescription</div>
+            <FormField name="description">
+                <FormItem class="grid gap">
+                    <FormLabel>Beschreibung</FormLabel>
+                    <FormControl>
+                        <FormTiptapEditor name="description" :form-values="values" :set-field-value="setFieldValue" />
+                    </FormControl>
+                    <FormMessage class="text-xs" />
+                </FormItem>
+            </FormField>
             <FormField v-slot="{ componentField }" name="expense">
                 <FormItem class="grid gap">
                     <FormLabel>Aufwand</FormLabel>
@@ -98,7 +87,7 @@ const createCategory = async (name: string) => {
                 <FormItem class="grid gap">
                     <FormLabel>Faktor</FormLabel>
                     <FormControl>
-                        <Input v-bind="componentField" type="number" :disabled="loading" />
+                        <Input v-bind="componentField" type="number" step=".01" :disabled="loading" />
                     </FormControl>
                     <FormMessage class="text-xs" />
                 </FormItem>

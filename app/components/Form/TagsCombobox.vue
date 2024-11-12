@@ -4,7 +4,7 @@ import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInpu
 import { ComboboxAnchor, ComboboxContent, ComboboxInput, ComboboxPortal, ComboboxRoot } from 'radix-vue'
 import { Button } from '../ui/button';
 
-interface ComboboxItem { value: string, label: string }
+export interface ComboboxItem { value: string, label: string }
 
 interface TagsComboboxProps {
     name: string; formValues: any; setFieldValue: (name: any, value: any) => void;

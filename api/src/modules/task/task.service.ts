@@ -1,9 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { In, Repository } from 'typeorm';
 import { PaginationArgs } from 'src/common/dtos/pagination.input';
-import { TaskInput } from './dtos/task.input';
+import { DeleteTaskArgs, TaskInput } from './dtos/task.input';
 import { TaskCategory } from './task-category.entity';
 
 @Injectable()
@@ -25,11 +29,9 @@ export class TaskService {
     return tasks;
   }
 
-  async create(input: TaskInput) {
-    const { categoryIds, ...taskData } = input;
-    let categories = null;
-
-    console.log(input);
+  async createOrUpdate(input: TaskInput) {
+    const { id, categoryIds, ...taskData } = input;
+    let categories = [];
 
     if (categoryIds) {
       categories = await this.taskCategoryRepository.find({
@@ -43,15 +45,64 @@ export class TaskService {
       }
     }
 
-    console.log({
-      ...taskData,
+    if (id) {
+      const task = await this.taskRepository.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!task) {
+        throw new NotFoundException('Task not found.');
+      }
+
+      return await this._update(task, categories, taskData);
+    }
+
+    return await this._create(categories, taskData);
+  }
+
+  async delete(args: DeleteTaskArgs) {
+    const { id } = args;
+
+    if (id) {
+      const task = await this.taskRepository.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!task) {
+        throw new NotFoundException('Task not found.');
+      }
+
+      return await this.taskRepository.delete(id);
+    }
+
+    throw new BadRequestException('Missing ID.');
+  }
+
+  protected async _create(
+    categories: TaskCategory[],
+    input: Partial<TaskInput>,
+  ) {
+    const task = await this.taskRepository.create({
+      ...input,
       categories,
     });
 
-    const task = await this.taskRepository.create({
-      ...taskData,
-      categories,
-    });
+    await this.taskRepository.save(task);
+
+    return task;
+  }
+
+  protected async _update(
+    task: Task,
+    categories: TaskCategory[],
+    input: Partial<TaskInput>,
+  ) {
+    Object.assign(task, input);
+    task.categories = categories;
 
     await this.taskRepository.save(task);
 

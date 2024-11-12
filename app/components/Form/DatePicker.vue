@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from '@internationalized/date'
+import { DateFormatter, getLocalTimeZone, parseDate, parseDateTime, today } from '@internationalized/date'
 import { toDate } from 'radix-vue/date'
 import { Calendar as CalendarIcon } from 'lucide-vue-next'
 import { Calendar } from '@/components/ui/calendar'
@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import { DateTime } from 'luxon'
 
 const { name, formValues, setFieldValue } = defineProps<{ name: string; formValues: any; setFieldValue: any }>()
 
@@ -37,16 +38,16 @@ const value = computed({
             </FormControl>
         </PopoverTrigger>
         <PopoverContent class="w-auto p-0">
-            <Calendar v-model="value" initial-focus :min-value="new CalendarDate(1900, 1, 1)"
-                :max-value="today(getLocalTimeZone())" @update:model-value="(v) => {
-                    if (v) {
-                        setFieldValue(name, v.toString())
-                    }
-                    else {
-                        setFieldValue(name, undefined)
-                    }
+            <Calendar v-model="value" initial-focus :min-value="today(getLocalTimeZone())" @update:model-value="(v) => {
+                if (v) {
+                    // const datetime = DateTime.fromJSDate(v.toDate(getLocalTimeZone())).endOf('day').toString();
+                    setFieldValue(name, v.toString())
+                }
+                else {
+                    setFieldValue(name, undefined)
+                }
 
-                }" />
+            }" />
         </PopoverContent>
     </Popover>
 </template>

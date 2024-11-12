@@ -1,9 +1,19 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { ArgsType, Field, Float, ID, InputType, Int } from '@nestjs/graphql';
 import { TaskType } from '../enums/task-type.enum';
 import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
+import { TaskPriority } from '../enums/task-priority.enum';
+
+@ArgsType()
+export class DeleteTaskArgs {
+  @Field(() => ID)
+  id: string;
+}
 
 @InputType()
 export class TaskInput extends BaseAuditDto {
+  @Field(() => ID, { nullable: true })
+  id: string;
+
   @Field()
   title: string;
 
@@ -16,10 +26,13 @@ export class TaskInput extends BaseAuditDto {
   @Field(() => [String], { nullable: true })
   categoryIds: string[];
 
-  @Field({ defaultValue: 0.0 })
+  @Field({ defaultValue: TaskPriority.NONE })
+  priority: TaskPriority;
+
+  @Field(() => Int, { defaultValue: 0 })
   expense: number;
 
-  @Field({ defaultValue: 1.0 })
+  @Field(() => Float, { defaultValue: 1.0 })
   factor: number;
 
   @Field({ nullable: true })

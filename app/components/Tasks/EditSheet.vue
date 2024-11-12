@@ -7,10 +7,12 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '../ui/button';
+import type { Task } from '~/types';
 import { toast } from '../ui/toast';
 import { DateTime } from 'luxon';
 import type { ComboboxItem } from '../Form/TagsCombobox.vue';
 
+defineProps<{ task: Task }>()
 const emit = defineEmits(["success"])
 
 const loading = ref(false);
@@ -23,7 +25,7 @@ const onSubmit = async (values: any, props: any) => {
     loading.value = true
 
     try {
-        await GqlCreateTask({
+        await GqlUpdateTask({
             input: {
                 ...taskData,
                 due: due ? DateTime.fromISO(due).endOf('day') : null,
@@ -35,7 +37,7 @@ const onSubmit = async (values: any, props: any) => {
 
         toast({
             title: `${taskData.title}`,
-            description: 'Du hast eine neue Aufgabe erstellt.',
+            description: 'Erfolgreich bearbeitet.',
         });
 
         emit('success')
@@ -50,13 +52,13 @@ const onSubmit = async (values: any, props: any) => {
 
 <template>
     <Sheet v-model:open="open">
-        <SheetTrigger as-child><Button>Aufgabe hinzufügen</Button></SheetTrigger>
+        <SheetTrigger as-child><Button variant="ghost" class="text-sm">bearbeiten</Button></SheetTrigger>
         <SheetContent>
             <SheetHeader>
-                <SheetTitle>Neue Aufgabe hinzufügen</SheetTitle>
+                <SheetTitle>Aufgabe bearbeiten</SheetTitle>
             </SheetHeader>
             <div class="mt-6">
-                <TasksForm :loading="loading" @submit="onSubmit" />
+                <TasksForm :task="task" :loading="loading" @submit="onSubmit" />
             </div>
         </SheetContent>
     </Sheet>

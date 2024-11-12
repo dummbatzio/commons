@@ -90,8 +90,9 @@ type TaskDto {
   status: String!
   type: String
   categories: [TaskCategoryDto!]
+  priority: Int!
   expense: Int!
-  factor: Int!
+  factor: Float!
   due: DateTime
 }
 
@@ -121,6 +122,8 @@ type Mutation {
   updateOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
   removeOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
   createTask(input: TaskInput!): TaskDto!
+  updateTask(input: TaskInput!): TaskDto!
+  deleteTask(id: ID!): Boolean!
   createTaskCategory(input: TaskCategoryInput!): TaskCategoryDto!
 }
 
@@ -165,12 +168,14 @@ input OrganizationMemberInput {
 }
 
 input TaskInput {
+  id: ID
   title: String!
   description: String
   type: String
   categoryIds: [String!]
+  priority: Int! = 0
   expense: Int! = 0
-  factor: Int! = 1
+  factor: Float! = 1
   due: DateTime
 }
 

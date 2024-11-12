@@ -7,6 +7,7 @@ fragment TaskFields on TaskDto {
   id
   title
   description
+  priority
   expense
   factor
   due
@@ -32,6 +33,16 @@ mutation CreateTask($input: TaskInput!) {
   createTask(input: $input) {
     ...TaskFields
   }
+}
+
+mutation UpdateTask($input: TaskInput!) {
+  updateTask(input: $input) {
+    ...TaskFields
+  }
+}
+
+mutation DeleteTask($id: ID!) {
+  deleteTask(id: $id)
 }
 
 query GetTaskCategories($nameLike: String) {

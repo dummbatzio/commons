@@ -3,12 +3,34 @@ import { ClockIcon, RocketIcon, ListIcon, FlameIcon, Trash2Icon } from 'lucide-v
 import type { Task } from '~/types';
 import { TaskPriority } from '~/types/tasks';
 import { Button } from '../ui/button';
+import { toast } from '../ui/toast';
 
 interface TaskListItemProps {
     task: Task
 }
+const { task } = defineProps<TaskListItemProps>()
+const emit = defineEmits(["success"]);
 
-defineProps<TaskListItemProps>()
+const loading = ref(false);
+const onDelete = async () => {
+    const { id } = task
+    try {
+        await GqlDeleteTask({
+            id
+        })
+
+        toast({
+            title: `${task.title}`,
+            description: 'Erfolgreich gelöscht.',
+        });
+
+        emit('success')
+    } catch (error) {
+        console.log(error)
+    } finally {
+        loading.value = false
+    }
+}
 </script>
 
 <template>
@@ -16,8 +38,8 @@ defineProps<TaskListItemProps>()
         <div class="flex flex-col gap-4 justify-between">
             <div>
                 <span class="text-xs text-muted-foreground">{{ task.type }}</span>
-                <h3 class="mb-2 font-medium">{{ task.title }}</h3>
-                <p v-if="task.description" class="text-muted-foreground text-sm">{{ task.description }}</p>
+                <h3 class="font-medium">{{ task.title }}</h3>
+                <div v-if="task.description" class="prose prose-sm mt-4" v-html="task.description" />
             </div>
             <div class="flex items-center justify-between">
                 <div class="flex gap-4 text-gray-600">
@@ -39,10 +61,10 @@ defineProps<TaskListItemProps>()
                     </div>
                 </div>
                 <div class="flex gap-2 justify-end">
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" @click="onDelete">
                         <Trash2Icon class="text-destructive w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" class="text-sm">Edit</Button>
+                    <TasksEditSheet :task="task" @success="emit('success')" />
                 </div>
             </div>
         </div>

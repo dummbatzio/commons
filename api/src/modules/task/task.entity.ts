@@ -38,7 +38,7 @@ export class Task extends BaseAuditEntity {
   @Column({ type: 'enum', enum: TaskPriority, default: TaskPriority.NONE })
   public priority: TaskPriority;
 
-  @ManyToMany(() => TaskCategory, { eager: true })
+  @ManyToMany(() => TaskCategory, { eager: true, onDelete: 'CASCADE' })
   @JoinTable()
   categories: TaskCategory[];
 

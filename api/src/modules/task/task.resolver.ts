@@ -1,5 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { TaskInput } from './dtos/task.input';
+import { DeleteTaskArgs, TaskInput } from './dtos/task.input';
 import { TaskDto } from './dtos/task.dto';
 import { PaginationArgs } from 'src/common/dtos/pagination.input';
 import { TaskService } from './task.service';
@@ -36,7 +36,18 @@ export class TaskResolver {
 
   @Mutation(() => TaskDto, { name: 'createTask' })
   async createTask(@Args('input') input: TaskInput) {
-    return this.taskService.create(input);
+    return this.taskService.createOrUpdate(input);
+  }
+
+  @Mutation(() => TaskDto, { name: 'updateTask' })
+  async updateTask(@Args('input') input: TaskInput) {
+    return this.taskService.createOrUpdate(input);
+  }
+
+  @Mutation(() => Boolean, { name: 'deleteTask' })
+  async deleteTask(@Args() args: DeleteTaskArgs) {
+    await this.taskService.delete(args);
+    return true;
   }
 
   @Query(() => [TaskCategoryDto], { name: 'taskCategories' })
