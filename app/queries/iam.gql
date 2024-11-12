@@ -1,0 +1,34 @@
+mutation SignUpUser($input: SignUpInput!) {
+  signUp(input: $input) {
+    email
+  }
+}
+
+mutation SignInUser($input: SignInInput!) {
+  signIn(input: $input) {
+    accessToken
+    refreshToken
+    user {
+      id
+      username
+      email
+    }
+  }
+}
+
+query Me {
+  me {
+    id
+    status
+    username
+    email
+    profile {
+      id
+      status
+      visibility
+      firstname
+      lastname
+      bio
+    }
+  }
+}

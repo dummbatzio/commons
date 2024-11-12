@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: bside_commons_postgres
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=supersecret
+      - POSTGRES_USER=bside_commons-nestjs
+      - POSTGRES_DB=bside_commons-nestjs
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: bside_commons_redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

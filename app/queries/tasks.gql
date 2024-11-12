@@ -1,0 +1,47 @@
+fragment TaskCategoryFields on TaskCategoryDto {
+  id
+  name
+}
+
+fragment TaskFields on TaskDto {
+  id
+  title
+  description
+  expense
+  factor
+  due
+  categories {
+    ...TaskCategoryFields
+  }
+  type
+  status
+}
+
+query GetPaginatedTasks($skip: Int, $take: Int) {
+  tasks(skip: $skip, take: $take) {
+    totalCount
+    skip
+    take
+    items {
+      ...TaskFields
+    }
+  }
+}
+
+mutation CreateTask($input: TaskInput!) {
+  createTask(input: $input) {
+    ...TaskFields
+  }
+}
+
+query GetTaskCategories($nameLike: String) {
+  taskCategories(nameLike: $nameLike) {
+    ...TaskCategoryFields
+  }
+}
+
+mutation CreateTaskCategory($name: String!) {
+  createTaskCategory(input: { name: $name }) {
+    ...TaskCategoryFields
+  }
+}

@@ -1,0 +1,7 @@
+# Misc
+.DS_Stor
+
+# Local env files
+.env
+.env.*
+!.env.examplee

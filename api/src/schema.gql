@@ -1,0 +1,179 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type FileDto {
+  filename: String!
+  path: String!
+  mimetype: String
+}
+
+type ProfileDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  firstname: String
+  lastname: String
+  bio: String
+  avatar: FileDto
+  status: String!
+  visibility: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserDto {
+  id: ID!
+  username: String!
+  email: String!
+  status: String!
+  profile: ProfileDto
+}
+
+type TokensDto {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type SessionDto {
+  accessToken: String!
+  refreshToken: String!
+  user: UserDto!
+}
+
+type WalletDto {
+  id: ID!
+  balance: Int!
+}
+
+type WalletTransactionDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  receiver: WalletDto!
+  sender: WalletDto
+  amount: Int!
+  comment: String
+}
+
+type OrganizationDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  description: String
+  profileImage: FileDto
+}
+
+type OrganizationMemberDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  profile: ProfileDto!
+  isAdmin: Boolean!
+}
+
+type TaskCategoryDto {
+  id: ID!
+  name: String!
+}
+
+type TaskDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String!
+  description: String
+  status: String!
+  type: String
+  categories: [TaskCategoryDto!]
+  expense: Int!
+  factor: Int!
+  due: DateTime
+}
+
+type PaginatedTasksDto {
+  totalCount: Int!
+  skip: Int!
+  take: Int!
+  items: [TaskDto!]!
+}
+
+type Query {
+  me: UserDto!
+  myOrganizations: [OrganizationDto!]!
+  tasks(skip: Int! = 0, take: Int! = 25): PaginatedTasksDto!
+  taskCategories(nameLike: String): [TaskCategoryDto!]!
+}
+
+type Mutation {
+  signUp(input: SignUpInput!): UserDto!
+  signIn(input: SignInInput!): SessionDto!
+  refreshTokens(token: String!): TokensDto!
+  updateProfile(input: ProfileInput!): ProfileDto!
+  donate(input: WalletTransactionInput!): WalletTransactionDto!
+  createOrganization(input: OrganizationInput!): OrganizationDto!
+  updateOrganization(input: OrganizationInput!): OrganizationDto!
+  addOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
+  updateOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
+  removeOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
+  createTask(input: TaskInput!): TaskDto!
+  createTaskCategory(input: TaskCategoryInput!): TaskCategoryDto!
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input ProfileInput {
+  id: String
+  avatarId: String
+  firstname: String
+  lastname: String
+  bio: String
+  visibility: String
+}
+
+input WalletTransactionInput {
+  receiverWalletId: ID!
+  senderWalletId: ID!
+  amount: Int!
+  comment: String
+}
+
+input OrganizationInput {
+  id: ID
+  name: String!
+  description: String
+  profileImageId: ID
+}
+
+input OrganizationMemberInput {
+  profileId: ID!
+  organizationId: ID!
+  isAdmin: Boolean! = false
+}
+
+input TaskInput {
+  title: String!
+  description: String
+  type: String
+  categoryIds: [String!]
+  expense: Int! = 0
+  factor: Int! = 1
+  due: DateTime
+}
+
+input TaskCategoryInput {
+  name: String!
+}
