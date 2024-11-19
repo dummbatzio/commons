@@ -12,6 +12,7 @@ import { TaskType } from './enums/task-type.enum';
 import { TaskStatus } from './enums/task-status.enum';
 import { Assignment } from './assignment.entity';
 import { TaskPriority } from './enums/task-priority.enum';
+import { TaskRepeat } from './enums/task-repeat.enum';
 
 @Entity()
 export class Task extends BaseAuditEntity {
@@ -35,7 +36,7 @@ export class Task extends BaseAuditEntity {
   })
   type: TaskType;
 
-  @Column({ type: 'enum', enum: TaskPriority, default: TaskPriority.NONE })
+  @Column({ default: TaskPriority.NONE })
   public priority: TaskPriority;
 
   @ManyToMany(() => TaskCategory, { eager: true, onDelete: 'CASCADE' })
@@ -50,6 +51,9 @@ export class Task extends BaseAuditEntity {
 
   @Column({ nullable: true })
   public due: Date;
+
+  @Column({ nullable: true, default: TaskRepeat.NONE })
+  public repeat: TaskRepeat;
 
   @ManyToOne(() => Task, (task) => task.series, { nullable: true })
   public parent: Task;

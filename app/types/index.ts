@@ -1,3 +1,5 @@
+import type { TaskPriority, TaskRepeat } from "./tasks";
+
 export interface Assignment {
   id: string;
   title: string;
@@ -26,17 +28,19 @@ export interface Profile {
 export interface TaskCategory {
   id: string;
   name: string;
+  parent?: TaskCategory;
 }
 
 export interface Task {
-  id: string;
+  id?: string;
   title: string;
   description?: string | null;
-  priority: number;
+  priority: TaskPriority;
   expense: number;
   factor: number;
   due?: Date | null;
   categories?: TaskCategory[] | null;
   type?: string | null;
   status: string;
+  repeat?: TaskRepeat;
 }

@@ -79,6 +79,7 @@ type OrganizationMemberDto {
 type TaskCategoryDto {
   id: ID!
   name: String!
+  parent: TaskCategoryDto
 }
 
 type TaskDto {
@@ -90,10 +91,11 @@ type TaskDto {
   status: String!
   type: String
   categories: [TaskCategoryDto!]
-  priority: Int!
+  priority: String!
   expense: Int!
   factor: Float!
   due: DateTime
+  repeat: String
 }
 
 type PaginatedTasksDto {
@@ -107,7 +109,7 @@ type Query {
   me: UserDto!
   myOrganizations: [OrganizationDto!]!
   tasks(skip: Int! = 0, take: Int! = 25): PaginatedTasksDto!
-  taskCategories(nameLike: String): [TaskCategoryDto!]!
+  taskCategories(parentId: String, nameLike: String): [TaskCategoryDto!]!
 }
 
 type Mutation {
@@ -173,12 +175,14 @@ input TaskInput {
   description: String
   type: String
   categoryIds: [String!]
-  priority: Int! = 0
+  priority: String! = "none"
   expense: Int! = 0
   factor: Float! = 1
   due: DateTime
+  repeat: String = "none"
 }
 
 input TaskCategoryInput {
+  parentId: String
   name: String!
 }

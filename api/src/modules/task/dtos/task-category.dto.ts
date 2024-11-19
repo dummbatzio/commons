@@ -5,4 +5,7 @@ import { BaseDto } from 'src/common/dtos/base.dto';
 export class TaskCategoryDto extends BaseDto {
   @Field()
   public name: string;
+
+  @Field({ nullable: true })
+  public parent: TaskCategoryDto;
 }

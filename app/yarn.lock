@@ -2027,10 +2027,22 @@
     lodash.merge "^4.6.2"
     postcss-selector-parser "6.0.10"
 
+"@tanstack/table-core@8.20.5":
+  version "8.20.5"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.20.5.tgz#3974f0b090bed11243d4107283824167a395cf1d"
+  integrity sha512-P9dF7XbibHph2PFRz8gfBKEXEY/HJPOhym8CHmjF8y3q5mWpKx9xtZapXQUWCgkqvsK0R46Azuz+VaxD4Xl+Tg==
+
 "@tanstack/virtual-core@3.10.9":
   version "3.10.9"
   resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.10.9.tgz#55710c92b311fdaa8d8c66682a0dbdd684bc77c4"
   integrity sha512-kBknKOKzmeR7lN+vSadaKWXaLS0SZZG+oqpQ/k80Q6g9REn6zRHS/ZYdrIzHnpHgy/eWs00SujveUN/GJT2qTw==
+
+"@tanstack/vue-table@^8.20.5":
+  version "8.20.5"
+  resolved "https://registry.yarnpkg.com/@tanstack/vue-table/-/vue-table-8.20.5.tgz#4564574a95900c8e014659c15d138154d7730942"
+  integrity sha512-2xixT3BEgSDw+jOSqPt6ylO/eutDI107t2WdFMVYIZZ45UmTHLySqNriNs0+dMaKR56K5z3t+97P6VuVnI2L+Q==
+  dependencies:
+    "@tanstack/table-core" "8.20.5"
 
 "@tanstack/vue-virtual@^3.8.1":
   version "3.10.9"
@@ -5364,6 +5376,11 @@ markdown-it@^14.0.0:
     mdurl "^2.0.0"
     punycode.js "^2.3.1"
     uc.micro "^2.1.0"
+
+maska@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/maska/-/maska-3.0.3.tgz#36e3c2c77bf35db09842f318315c590e2855a9ce"
+  integrity sha512-ItFbuqVeBKk1JmC4QCRxKeNaX+Ym/oMUYZVXwvAPKAwMeO4bYZpIGjNWOcZy+L8YXQaPvCZ68+5eYpGRdyaA8w==
 
 mdn-data@2.0.28:
   version "2.0.28"

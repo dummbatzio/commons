@@ -1,6 +1,10 @@
 fragment TaskCategoryFields on TaskCategoryDto {
   id
   name
+  parent {
+    id
+    name
+  }
 }
 
 fragment TaskFields on TaskDto {
@@ -15,6 +19,7 @@ fragment TaskFields on TaskDto {
     ...TaskCategoryFields
   }
   type
+  repeat
   status
 }
 
@@ -45,14 +50,14 @@ mutation DeleteTask($id: ID!) {
   deleteTask(id: $id)
 }
 
-query GetTaskCategories($nameLike: String) {
-  taskCategories(nameLike: $nameLike) {
+query GetTaskCategories($parentId: String, $nameLike: String) {
+  taskCategories(parentId: $parentId, nameLike: $nameLike) {
     ...TaskCategoryFields
   }
 }
 
-mutation CreateTaskCategory($name: String!) {
-  createTaskCategory(input: { name: $name }) {
+mutation CreateTaskCategory($name: String!, $parentId: String) {
+  createTaskCategory(input: { name: $name, parentId: $parentId }) {
     ...TaskCategoryFields
   }
 }

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.12.1",
+    "@tanstack/vue-table": "^8.20.5",
     "@tiptap/pm": "^2.9.1",
     "@tiptap/starter-kit": "^2.9.1",
     "@tiptap/vue-3": "^2.9.1",
@@ -21,6 +22,7 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.441.0",
     "luxon": "^3.5.0",
+    "maska": "^3.0.3",
     "nuxt": "^3.14.159",
     "nuxt-auth-utils": "^0.3.9",
     "nuxt-graphql-client": "^0.2.36",

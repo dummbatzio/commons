@@ -2,6 +2,7 @@ import { ArgsType, Field, Float, ID, InputType, Int } from '@nestjs/graphql';
 import { TaskType } from '../enums/task-type.enum';
 import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
 import { TaskPriority } from '../enums/task-priority.enum';
+import { TaskRepeat } from '../enums/task-repeat.enum';
 
 @ArgsType()
 export class DeleteTaskArgs {
@@ -37,4 +38,7 @@ export class TaskInput extends BaseAuditDto {
 
   @Field({ nullable: true })
   due: Date;
+
+  @Field({ nullable: true, defaultValue: TaskPriority.NONE })
+  repeat: TaskRepeat;
 }

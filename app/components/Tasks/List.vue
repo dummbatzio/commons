@@ -9,7 +9,7 @@ const emit = defineEmits(["refresh"])
 </script>
 
 <template>
-    <ul class="divide-y-2">
+    <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <li v-for="task in tasks">
             <TasksListItem :task="task" @success="emit('refresh')" />
         </li>

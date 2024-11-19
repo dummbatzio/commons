@@ -9,10 +9,11 @@ export interface ComboboxItem { value: string, label: string }
 interface TagsComboboxProps {
     name: string; formValues: any; setFieldValue: (name: any, value: any) => void;
     placeholder: string;
+    disabled?: boolean;
     create?: (name: string) => Promise<ComboboxItem>
     fetchSuggestions?: (nameLike?: string) => Promise<ComboboxItem[]>
 }
-const { name, formValues, setFieldValue, create, fetchSuggestions } = defineProps<TagsComboboxProps>()
+const { name, formValues, disabled, setFieldValue, create, fetchSuggestions } = defineProps<TagsComboboxProps>()
 const emit = defineEmits(['update:modelValue'])
 
 const modelValue = computed({
@@ -55,6 +56,13 @@ const onCreateAndSelect = async () => {
     }
 }
 
+watch(() => disabled, async (isDisabled, wasDisabled) => {
+    if (fetchSuggestions && wasDisabled && !isDisabled) {
+        console.log('fetch suggestions')
+        await fetchSuggestions()
+    }
+})
+
 onMounted(async () => {
     if (fetchSuggestions) {
         suggestions.value = await fetchSuggestions()
@@ -63,7 +71,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <TagsInput class="px-0 gap-0 w-80" :model-value="modelValue">
+    <TagsInput class="px-0 gap-0" :model-value="modelValue">
         <div class="flex gap-2 flex-wrap items-center px-3">
             <TagsInputItem v-for="item in modelValue" :key="item.value" :value="item.value">
                 <span class="py-1 px-2">{{ item.label }}</span>
@@ -71,7 +79,8 @@ onMounted(async () => {
             </TagsInputItem>
         </div>
 
-        <ComboboxRoot v-model="modelValue" v-model:open="open" v-model:search-term="searchTerm" class="w-full">
+        <ComboboxRoot v-model="modelValue" v-model:open="open" v-model:search-term="searchTerm" class="w-full"
+            :disabled="disabled">
             <ComboboxAnchor as-child>
                 <ComboboxInput :placeholder="placeholder" as-child>
                     <TagsInputInput class="w-full px-3" :class="modelValue.length > 0 ? 'mt-2' : ''"
@@ -90,9 +99,9 @@ onMounted(async () => {
                             </Button>
                         </CommandEmpty>
                         <CommandGroup>
-                            <CommandItem v-for="framework in filteredSuggestions" :key="framework.value"
-                                :value="framework.label" @select.prevent="onSelectSuggestion">
-                                {{ framework.label }}
+                            <CommandItem v-for="suggestion in filteredSuggestions" :key="suggestion.value"
+                                :value="suggestion.label" @select.prevent="onSelectSuggestion">
+                                {{ suggestion.label }}
                             </CommandItem>
                         </CommandGroup>
                     </CommandList>

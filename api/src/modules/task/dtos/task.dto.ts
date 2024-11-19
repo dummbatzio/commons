@@ -4,6 +4,7 @@ import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
 import { TaskStatus } from '../enums/task-status.enum';
 import { TaskCategoryDto } from './task-category.dto';
 import { TaskPriority } from '../enums/task-priority.enum';
+import { TaskRepeat } from '../enums/task-repeat.enum';
 
 @ObjectType()
 export class TaskDto extends BaseAuditDto {
@@ -33,4 +34,7 @@ export class TaskDto extends BaseAuditDto {
 
   @Field({ nullable: true })
   public due: Date;
+
+  @Field({ nullable: true })
+  public repeat: TaskRepeat;
 }
