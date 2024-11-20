@@ -6,7 +6,7 @@ import type { Task } from '~/types';
 import { Separator } from '../ui/separator';
 import { Clock } from 'lucide-vue-next';
 import { Checkbox } from '../ui/checkbox';
-import { TaskPriority } from '~/types/tasks';
+import { TaskPriority, TaskRepeat } from '~/types/tasks';
 import { DateTime, Duration } from 'luxon';
 import type { ComboboxItem } from '../Form/Combobox.vue';
 
@@ -37,7 +37,7 @@ const schema = toTypedSchema(
         category: comboboxSchema.optional(),
         subcategories: z.array(comboboxSchema).optional(),
         type: z.string().default("single").nullable(),
-        repeat: z.enum(["none", "daily", "weekly", "monthly"]).optional()
+        repeat: z.nativeEnum(TaskRepeat).optional()
     }).superRefine((data, ctx) => {
         if (data.type === "series") {
             if (!data.repeat) {
@@ -65,7 +65,6 @@ const schema = toTypedSchema(
     })
 )
 
-console.log(task?.categories, task?.categories?.filter(c => !c.parent))
 const initialDueDate = task?.due ? DateTime.fromISO(task!.due!.toString()).toLocal() : null;
 const initialDue = initialDueDate ? {
     date: initialDueDate.toISODate(),
@@ -197,14 +196,14 @@ defineExpose({
                             </FormControl>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectItem value="daily">
-                                        täglich
-                                    </SelectItem>
                                     <SelectItem value="weekly">
                                         wöchentlich
                                     </SelectItem>
                                     <SelectItem value="monthly">
                                         monatlich
+                                    </SelectItem>
+                                    <SelectItem value="quarterly">
+                                        quartalsweise
                                     </SelectItem>
                                 </SelectGroup>
                             </SelectContent>

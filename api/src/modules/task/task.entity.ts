@@ -46,7 +46,15 @@ export class Task extends BaseAuditEntity {
   @Column({ type: 'int', nullable: true })
   public expense: number;
 
-  @Column({ type: 'decimal' })
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   public factor: number;
 
   @Column({ nullable: true })
@@ -55,10 +63,15 @@ export class Task extends BaseAuditEntity {
   @Column({ nullable: true, default: TaskRepeat.NONE })
   public repeat: TaskRepeat;
 
-  @ManyToOne(() => Task, (task) => task.series, { nullable: true })
+  @ManyToOne(() => Task, (task) => task.series, {
+    nullable: true,
+  })
   public parent: Task;
 
-  @OneToMany(() => Task, (task) => task.parent, { nullable: true })
+  @OneToMany(() => Task, (task) => task.parent, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   public series: Task[];
 
   @OneToMany(() => Assignment, (assignment) => assignment.task)

@@ -5,6 +5,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 export class TaskCategory extends BaseEntity {
   @ManyToOne(() => TaskCategory, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   public parent: TaskCategory;
 

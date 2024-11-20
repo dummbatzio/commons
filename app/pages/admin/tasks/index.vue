@@ -6,7 +6,11 @@ const route = useRoute();
 const { p } = route.query
 const limit = 25;
 
-const { data, refresh } = await useAsyncGql("GetPaginatedTasks", { skip: 0, take: 25 })
+const page = computed(() => {
+    const pAsInt = parseInt(p as string)
+    return isNaN(pAsInt) ? 1 : pAsInt;
+})
+const { data, refresh } = await useAsyncGql("GetPaginatedTasks", { skip: (page.value - 1) * limit, take: limit })
 const tasks = computed(() => data.value?.tasks.items)
 
 const dialogData: Ref<{ open: boolean; task: Task | null }> = ref({
@@ -23,7 +27,7 @@ const onCopy = (task: Task) => {
         open: true,
         task: {
             ...taskCopy,
-            title: taskCopy.title = " - KOPIE"
+            title: `${taskCopy.title} - KOPIE`
         }
     };
 }

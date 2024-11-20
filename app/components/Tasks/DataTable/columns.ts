@@ -1,10 +1,11 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/vue-table";
 import { Repeat1Icon, RepeatIcon } from "lucide-vue-next";
-import { Duration } from "luxon";
+import { DateTime, Duration } from "luxon";
 import { h } from "vue";
 import { Badge } from "~/components/ui/badge";
 import type { Task } from "~/types";
 import RowAction from "./RowAction.vue";
+import { TaskPriority } from "~/types/tasks";
 
 const columnHelper = createColumnHelper<Task>();
 export const columns = ({
@@ -38,6 +39,26 @@ export const columns = ({
     columnHelper.accessor("priority", {
       header: "Prio",
       cell: ({ row }) => h("div", {}, row.getValue("priority")),
+      sortingFn: (rowA: any, rowB: any, columnId: any): number => {
+        const taskPriorityValues = Object.values(TaskPriority);
+        const aIndex = taskPriorityValues.findIndex(
+          (v) => v == rowA.getValue(columnId)
+        );
+        const bIndex = taskPriorityValues.findIndex(
+          (v) => v === rowB.getValue(columnId)
+        );
+        return bIndex - aIndex;
+      },
+    }),
+    columnHelper.accessor("due", {
+      header: "Fälligkeit",
+      cell: ({ row }) => {
+        if (!row.getValue("due")) {
+          return h("div", {}, "keine");
+        }
+        const date = DateTime.fromISO(row.getValue("due"));
+        return h("div", {}, date.toLocaleString(DateTime.DATETIME_SHORT));
+      },
     }),
     columnHelper.accessor("expense", {
       header: "Aufwand (h)",
@@ -52,17 +73,16 @@ export const columns = ({
     }),
     columnHelper.accessor("factor", {
       header: "Faktor",
-      cell: ({ row }) => h("div", {}, row.getValue("factor")),
+      cell: ({ row }) => h("div", { class: "w-max" }, row.getValue("factor")),
     }),
     columnHelper.display({
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
         const task = row.original;
-
         return h(
           "div",
-          { class: "relative" },
+          { class: "relative text-right" },
           h(RowAction, {
             task,
             "onRow:edit": onEdit,

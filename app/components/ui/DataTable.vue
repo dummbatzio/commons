@@ -23,7 +23,7 @@ const props = defineProps<{
 }>()
 
 const sorting = ref<SortingState>([
-    { id: "priority", desc: true }
+    { id: "priority", desc: false }
 ])
 
 const table = useVueTable({
@@ -31,10 +31,8 @@ const table = useVueTable({
     get columns() { return props.columns },
     state: {
         get sorting() { return sorting.value },
-
     },
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
 })
 </script>

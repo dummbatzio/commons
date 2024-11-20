@@ -3,4 +3,5 @@ export enum TaskRepeat {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
 }
