@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { TaskModule } from './modules/task/task.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TaskModule } from './modules/task/task.module';
         index: false,
       },
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     RedisModule,
     IamModule,

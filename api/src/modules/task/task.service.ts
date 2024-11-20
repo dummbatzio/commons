@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,9 +14,12 @@ import { TaskType } from './enums/task-type.enum';
 import { TaskStatus } from './enums/task-status.enum';
 import { TaskRepeat } from './enums/task-repeat.enum';
 import { DateTime } from 'luxon';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TaskService {
+  private readonly logger = new Logger(TaskService.name, { timestamp: true });
+
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -170,9 +174,11 @@ export class TaskService {
 
     for (const due of seriesDatesToCreate) {
       const { id, ...newTask } = task;
+      console.log('CREATE', due, 'parent', task.id);
       const taskSeriesItem = await this.taskRepository.create({
         ...newTask,
         parent: task,
+        series: null,
         type: TaskType.SINGLE,
         due,
         repeat: TaskRepeat.NONE,
@@ -250,9 +256,49 @@ export class TaskService {
     return JSON.stringify(compareA) !== JSON.stringify(compareB);
   }
 
-  protected async _checkTaskSeries() {
+  @Cron('0 * * * * *') // every minute
+  async handleTaskSeriesJob() {
+    this.logger.log('Executing TaskSeries Job');
+
     // all open tasks with type series
-    // check expired tasks (status = open && due < now) --> TaskStatus.OVERDUE
-    // _updateTaskSeries
+    const openSeriesTasks = await this.taskRepository.find({
+      relations: ['categories', 'categories.parent', 'series'],
+      where: { status: TaskStatus.OPEN, type: TaskType.SERIES },
+    });
+
+    for (const task of openSeriesTasks) {
+      const now = DateTime.now().toUTC().toJSDate();
+      const overdueTasks = task.series.filter(
+        (s) => s.status === TaskStatus.OPEN && s.due < now,
+      );
+
+      for (const overdueTask of overdueTasks) {
+        overdueTask.status = TaskStatus.OVERDUE;
+        await this.taskRepository.save(overdueTask);
+      }
+
+      if (overdueTasks.length) {
+        const nextOpenTask = task.series
+          .filter((s) => s.status === TaskStatus.OPEN)
+          .sort((a, b) => b.due.getTime() - a.due.getTime())
+          .at(0);
+
+        if (nextOpenTask) {
+          task.due = nextOpenTask.due;
+          await this.taskRepository.save(task);
+        }
+      }
+
+      const series = await this._updateTaskSeries(task);
+      if (
+        task.series.length !== series.length ||
+        task.series
+          .map((s) => s.id)
+          .some((id) => !series.map((x) => x.id).includes(id))
+      ) {
+        task.series = series;
+        await this.taskRepository.save(task);
+      }
+    }
   }
 }
