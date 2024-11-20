@@ -14,6 +14,18 @@ module.exports = {
         "2xl": "1400px",
       },
     },
+    fontFamily: {
+      sans: ["Mulish", "ui-sans-serif", "system-ui", "sans-serif"],
+      serif: [
+        "American Typewriter",
+        "ui-serif",
+        "Georgia",
+        "Cambria",
+        "Times New Roman",
+        "Times",
+        "serif",
+      ],
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",

@@ -174,7 +174,6 @@ export class TaskService {
 
     for (const due of seriesDatesToCreate) {
       const { id, ...newTask } = task;
-      console.log('CREATE', due, 'parent', task.id);
       const taskSeriesItem = await this.taskRepository.create({
         ...newTask,
         parent: task,
