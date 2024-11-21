@@ -140,10 +140,25 @@ defineExpose({
 
             <Separator class="col-span-full my-2" />
 
+            <div class="col-span-full">
+                <FormField v-slot="{ value, handleChange }" name="type" type="checkbox" value="series"
+                    unchecked-value="single">
+                    <FormItem class="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl class="mt-0.5">
+                            <Checkbox :checked="value === 'series'" @update:checked="handleChange" />
+                        </FormControl>
+                        <FormLabel class="text-sm font-normal">
+                            Wiederkehrende Aufgabe
+                        </FormLabel>
+                    </FormItem>
+                    <FormMessage class="text-xs" />
+                </FormField>
+            </div>
+
             <div class="col-span-full lg:col-span-3">
                 <FormField name="due.date">
                     <FormItem class="grid gap">
-                        <FormLabel>Bis</FormLabel>
+                        <FormLabel>{{ values.type === 'series' ? "Serienstart" : "Fälligkeit" }}</FormLabel>
                         <FormDatePicker name="due.date" placeholder="Datum" :form-values="values"
                             :set-field-value="setFieldValue" :disabled="loading" />
                         <FormMessage class="text-xs" />
@@ -166,21 +181,6 @@ defineExpose({
                         </FormControl>
                         <FormMessage class="text-xs" />
                     </FormItem>
-                </FormField>
-            </div>
-
-            <div class="col-span-full">
-                <FormField v-slot="{ value, handleChange }" name="type" type="checkbox" value="series"
-                    unchecked-value="single">
-                    <FormItem class="flex flex-row items-start space-x-2 space-y-0">
-                        <FormControl class="mt-0.5">
-                            <Checkbox :checked="value === 'series'" @update:checked="handleChange" />
-                        </FormControl>
-                        <FormLabel class="text-sm font-normal">
-                            Wiederkehrende Aufgabe
-                        </FormLabel>
-                    </FormItem>
-                    <FormMessage class="text-xs" />
                 </FormField>
             </div>
 
@@ -211,6 +211,12 @@ defineExpose({
                         <FormMessage class="text-xs" />
                     </FormItem>
                 </FormField>
+            </div>
+
+            <div v-if="task?.id && task?.type === 'series'" class="col-span-full">
+                <p class="text-destructive text-sm">
+                    Änderung des Serienstarts oder der Wiederholung kann zu Neugenerierung der Folgetermine führen.
+                </p>
             </div>
 
             <Separator class="col-span-full my-2" />

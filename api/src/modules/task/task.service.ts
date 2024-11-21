@@ -30,7 +30,7 @@ export class TaskService {
   async findAll(args: PaginationArgs = { skip: 0, take: 25 }) {
     const { skip, take } = args;
     const tasks = await this.taskRepository.findAndCount({
-      relations: ['categories', 'categories.parent'],
+      relations: ['categories', 'categories.parent', 'series'],
       where: { parent: IsNull() },
       take,
       skip,
@@ -215,11 +215,7 @@ export class TaskService {
       case TaskRepeat.QUARTERLY:
         for (let i = 0; i < 4; i++) {
           const nextQuarter = startDateTime.plus({ months: i * 3 });
-          futureDates.push(
-            nextQuarter
-              .startOf('week')
-              .plus({ days: startDateTime.weekday - 1 }),
-          );
+          futureDates.push(nextQuarter.endOf('quarter'));
         }
         break;
     }
@@ -276,17 +272,18 @@ export class TaskService {
         await this.taskRepository.save(overdueTask);
       }
 
-      if (overdueTasks.length) {
-        const nextOpenTask = task.series
-          .filter((s) => s.status === TaskStatus.OPEN)
-          .sort((a, b) => b.due.getTime() - a.due.getTime())
-          .at(0);
+      // keep initial due date to see, when the series started!?
+      // if (overdueTasks.length) {
+      //   const nextOpenTask = task.series
+      //     .filter((s) => s.status === TaskStatus.OPEN)
+      //     .sort((a, b) => b.due.getTime() - a.due.getTime())
+      //     .at(0);
 
-        if (nextOpenTask) {
-          task.due = nextOpenTask.due;
-          await this.taskRepository.save(task);
-        }
-      }
+      //   if (nextOpenTask) {
+      //     task.due = nextOpenTask.due;
+      //     await this.taskRepository.save(task);
+      //   }
+      // }
 
       const series = await this._updateTaskSeries(task);
       if (

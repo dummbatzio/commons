@@ -6,6 +6,7 @@ import { Badge } from "~/components/ui/badge";
 import type { Task } from "~/types";
 import RowAction from "./RowAction.vue";
 import { TaskPriority } from "~/types/tasks";
+import SeriesDialog from "../SeriesDialog.vue";
 
 const columnHelper = createColumnHelper<Task>();
 export const columns = ({
@@ -33,6 +34,9 @@ export const columns = ({
             { class: "max-w-[500px] truncate font-medium" },
             row.getValue("title")
           ),
+          ...(type && type === "series"
+            ? [h(SeriesDialog, { task: row.original })]
+            : []),
         ]);
       },
     }),

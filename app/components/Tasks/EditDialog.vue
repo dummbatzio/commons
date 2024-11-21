@@ -64,7 +64,8 @@ const onSubmit = async (values: any, props: any) => {
                 <TasksForm ref="form" :task="task" :loading="loading" @submit="onSubmit" />
             </div>
 
-            <DialogFooter class="p-6 pt-0">
+            <DialogFooter class="flex gap-4 p-6 pt-0">
+                <Button variant="ghost" @click="emit('close')">Abbrechen</Button>
                 <Button type="submit" :disabled="loading" @click="form.doSubmit()">Absenden</Button>
             </DialogFooter>
         </DialogContent>

@@ -21,6 +21,16 @@ fragment TaskFields on TaskDto {
   type
   repeat
   status
+  parent {
+    id
+    title
+    status
+  }
+  series {
+    id
+    status
+    due
+  }
 }
 
 query GetPaginatedTasks($skip: Int, $take: Int) {

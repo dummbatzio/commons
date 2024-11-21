@@ -37,4 +37,10 @@ export class TaskDto extends BaseAuditDto {
 
   @Field({ nullable: true })
   public repeat: TaskRepeat;
+
+  @Field({ nullable: true })
+  public parent: TaskDto;
+
+  @Field(() => [TaskDto], { nullable: true })
+  public series: TaskDto[];
 }

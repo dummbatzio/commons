@@ -96,6 +96,8 @@ type TaskDto {
   factor: Float!
   due: DateTime
   repeat: String
+  parent: TaskDto
+  series: [TaskDto!]
 }
 
 type PaginatedTasksDto {

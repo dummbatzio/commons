@@ -43,4 +43,6 @@ export interface Task {
   type?: string | null;
   status: string;
   repeat?: TaskRepeat;
+  parent?: Task;
+  series?: Task[];
 }
