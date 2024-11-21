@@ -8,12 +8,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Profile } from './profile.entity';
-import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 import { UserService } from '../iam/user/user.service';
 import { ProfileInput } from './dtos/profile.input';
 import { FileService } from '../file/file.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { WalletService } from '../wallet/wallet.service';
+import { ProfileType } from './enums/profile-type.enum';
 
 @Injectable()
 export class ProfileService {
@@ -32,8 +32,10 @@ export class ProfileService {
     });
   }
 
-  async createEmptyProfile(): Promise<Profile> {
-    const emptyProfile = await this.profileRepository.create();
+  async createEmptyProfile(type: ProfileType): Promise<Profile> {
+    const emptyProfile = await this.profileRepository.create({
+      type,
+    });
     const emptyWallet = await this.walletService.createEmptyWallet();
     emptyProfile.wallet = emptyWallet;
 
@@ -42,22 +44,7 @@ export class ProfileService {
     return emptyProfile;
   }
 
-  async verify(id: string): Promise<Profile> {
-    const profile = await this.profileRepository.findOneBy({
-      id,
-    });
-
-    if (!profile) {
-      throw new NotFoundException('Profile not found.');
-    }
-
-    profile.status = VerificationStatus.VERIFIED;
-
-    await this.profileRepository.save(profile);
-
-    return profile;
-  }
-
+  // MIGHT NOT BE NEEDED ANYMORE
   async updateProfile(
     input: ProfileInput,
     currentUser: ActiveUserData,
@@ -75,27 +62,9 @@ export class ProfileService {
       );
     }
 
-    const transformedInput = await this.transformInput(input);
-    Object.assign(profile, transformedInput);
+    Object.assign(profile, input);
     await this.profileRepository.save(profile);
 
     return profile;
-  }
-
-  private async transformInput(input: ProfileInput) {
-    const { avatarId, ...rest } = input;
-    let avatar = null;
-
-    if (avatarId) {
-      avatar = await this.fileService.findOneById(avatarId);
-      if (!avatar) {
-        throw new NotFoundException('Cannot find Avatar Image.');
-      }
-    }
-
-    return {
-      ...rest,
-      avatar,
-    };
   }
 }

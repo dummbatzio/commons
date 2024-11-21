@@ -1,5 +1,5 @@
 import { CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
-import BaseEntity from './base.entity';
+import BaseEntity from '../entities/base.entity';
 
 @Entity()
 abstract class BaseAuditEntity extends BaseEntity {

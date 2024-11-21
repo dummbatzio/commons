@@ -1,4 +1,3 @@
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
 import {
   Column,
   Entity,
@@ -13,6 +12,7 @@ import { TaskStatus } from './enums/task-status.enum';
 import { Assignment } from './assignment.entity';
 import { TaskPriority } from './enums/task-priority.enum';
 import { TaskRepeat } from './enums/task-repeat.enum';
+import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 
 @Entity()
 export class Task extends BaseAuditEntity {

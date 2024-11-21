@@ -1,0 +1,4 @@
+fragment ProfileFields on ProfileDto {
+  id
+  type
+}

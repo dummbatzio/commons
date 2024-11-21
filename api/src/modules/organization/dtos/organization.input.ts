@@ -1,20 +1,14 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
-import { IsOptional } from 'class-validator';
+import { AgentInput } from 'src/common/dtos/agent.input';
 
 @InputType()
-export class OrganizationInput {
-  @IsOptional()
-  @Field(() => ID, { nullable: true })
-  public id: string;
-
-  @Field()
+export class OrganizationInput extends AgentInput {
+  @Field({ nullable: true })
   public name: string;
 
-  @IsOptional()
   @Field({ nullable: true })
   public description: string;
 
-  @IsOptional()
   @Field(() => ID, { nullable: true })
   public profileImageId: string;
 

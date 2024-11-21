@@ -1,4 +1,3 @@
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
 import {
   Column,
   Entity,
@@ -8,11 +7,12 @@ import {
   OneToOne,
 } from 'typeorm';
 import { OrganizationMember } from './organization-member.entity';
-import { Wallet } from '../wallet/wallet.entity';
 import { File } from '../file/file.entity';
+import Agent from 'src/common/entities/agent.entity';
+import { Profile } from '../profile/profile.entity';
 
 @Entity()
-export class Organization extends BaseAuditEntity {
+export class Organization extends Agent {
   @Column()
   public name: string;
 
@@ -29,9 +29,7 @@ export class Organization extends BaseAuditEntity {
   )
   public members: OrganizationMember[];
 
-  @OneToOne(() => Wallet)
+  @OneToOne(() => Profile, (profile) => profile.organization)
   @JoinColumn()
-  wallet: Wallet;
-
-  // events
+  profile: Profile;
 }

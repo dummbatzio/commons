@@ -11,13 +11,16 @@ import { OrganizationMember } from './organization-member.entity';
 import { FileService } from '../file/file.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { OrganizationInput } from './dtos/organization.input';
-import { Profile } from '../profile/profile.entity';
 import { OrganizationMemberInput } from './dtos/organization-member.input';
 import { ProfileService } from '../profile/profile.service';
 import { WalletService } from '../wallet/wallet.service';
+import { ProfileType } from '../profile/enums/profile-type.enum';
+import User from '../iam/user/user.entity';
+import { AgentService } from 'src/common/services/agent.service';
+import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 
 @Injectable()
-export class OrganizationService {
+export class OrganizationService implements AgentService<Organization> {
   constructor(
     private readonly userService: UserService,
     private readonly profileService: ProfileService,
@@ -44,8 +47,8 @@ export class OrganizationService {
     return await this.organizationRepository.find({
       where: {
         members: {
-          profile: {
-            id: user.profile.id,
+          user: {
+            id: user.id,
           },
         },
       },
@@ -63,13 +66,15 @@ export class OrganizationService {
     }
 
     const organization = this.organizationRepository.create(input);
-    const emptyWallet = await this.walletService.createEmptyWallet();
-    organization.wallet = emptyWallet;
+    const profile = await this.profileService.createEmptyProfile(
+      ProfileType.ORGANIZATION,
+    );
+    organization.profile = profile;
 
     await this.organizationRepository.save(organization);
 
     // add current user as organization admin
-    await this._addOrganizationMember(user.profile, organization, true);
+    await this._addOrganizationMember(user, organization, true);
 
     return await this.getOrganizatonById(organization.id);
   }
@@ -92,11 +97,9 @@ export class OrganizationService {
     }
 
     if (
-      organization.members.find(
-        (m) => m.profile.id === adminUser.profile.id && m.isAdmin,
-      )
+      organization.members.find((m) => m.user.id === adminUser.id && m.isAdmin)
     ) {
-      const transformedInput = await this._transformInput(input);
+      const transformedInput = await this.transformInput(input);
       Object.assign(organization, transformedInput);
       await this.organizationRepository.save(organization);
 
@@ -125,18 +128,16 @@ export class OrganizationService {
       throw new NotFoundException('Organization not found.');
     }
 
-    const memberProfile = await this.profileService.getById(input.profileId);
-    if (!memberProfile) {
-      throw new NotFoundException('Member profile not found.');
+    const member = await this.userService.findOneBy({ id: input.userId });
+    if (!member) {
+      throw new NotFoundException('Member not found.');
     }
 
     if (
-      organization.members.find(
-        (m) => m.profile.id === adminUser.profile.id && m.isAdmin,
-      )
+      organization.members.find((m) => m.user.id === adminUser.id && m.isAdmin)
     ) {
       return await this._addOrganizationMember(
-        memberProfile,
+        member,
         organization,
         input.isAdmin,
       );
@@ -156,7 +157,7 @@ export class OrganizationService {
 
     const organizationMember = await this.organizationMemberRepository.findOne({
       where: {
-        profile: { id: input.profileId },
+        user: { id: input.userId },
         organization: { id: input.organizationId },
       },
       relations: ['organization'],
@@ -167,7 +168,7 @@ export class OrganizationService {
 
     if (
       organizationMember.organization.members.find(
-        (m) => m.profile.id === adminUser.profile.id && m.isAdmin,
+        (m) => m.user.id === adminUser.id && m.isAdmin,
       )
     ) {
       Object.assign(organizationMember, input);
@@ -192,7 +193,7 @@ export class OrganizationService {
 
     const organizationMember = await this.organizationMemberRepository.findOne({
       where: {
-        profile: { id: input.profileId },
+        user: { id: input.userId },
         organization: { id: input.organizationId },
       },
       relations: ['organization'],
@@ -203,7 +204,7 @@ export class OrganizationService {
 
     if (
       organizationMember.organization.members.find(
-        (m) => m.profile.id === adminUser.profile.id && m.isAdmin,
+        (m) => m.user.id === adminUser.id && m.isAdmin,
       )
     ) {
       return await this.organizationMemberRepository.delete(organizationMember);
@@ -215,12 +216,12 @@ export class OrganizationService {
   }
 
   private async _addOrganizationMember(
-    profile: Profile,
+    user: User,
     organization: Organization,
     isAdmin?: boolean,
   ) {
     const member = this.organizationMemberRepository.create({
-      profile,
+      user,
       organization,
       isAdmin,
     });
@@ -228,7 +229,7 @@ export class OrganizationService {
     return this.organizationMemberRepository.save(member);
   }
 
-  private async _transformInput(input: OrganizationInput) {
+  async transformInput(input: OrganizationInput) {
     const { profileImageId, ...rest } = input;
     let profileImage = null;
 
@@ -243,5 +244,21 @@ export class OrganizationService {
       ...rest,
       profileImage,
     };
+  }
+
+  async verify(id: string): Promise<Organization> {
+    const organization = await this.organizationRepository.findOneBy({
+      id,
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found.');
+    }
+
+    organization.status = VerificationStatus.VERIFIED;
+
+    await this.organizationRepository.save(organization);
+
+    return organization;
   }
 }

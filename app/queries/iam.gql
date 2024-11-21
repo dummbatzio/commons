@@ -18,17 +18,6 @@ mutation SignInUser($input: SignInInput!) {
 
 query Me {
   me {
-    id
-    status
-    username
-    email
-    profile {
-      id
-      status
-      visibility
-      firstname
-      lastname
-      bio
-    }
+    ...UserFields
   }
 }

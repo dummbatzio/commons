@@ -1,9 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
+import { AgentoDto } from 'src/common/dtos/agent.dto';
 import { FileDto } from 'src/modules/file/dtos/file.dto';
 
 @ObjectType()
-export class OrganizationDto extends BaseAuditDto {
+export class OrganizationDto extends AgentoDto {
   @Field()
   public name: string;
 

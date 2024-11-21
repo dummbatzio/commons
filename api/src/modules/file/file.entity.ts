@@ -1,4 +1,4 @@
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
+import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 import { Column, Entity } from 'typeorm';
 
 @Entity()

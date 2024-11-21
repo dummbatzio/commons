@@ -3,6 +3,7 @@
 # ------------------------------------------------------
 
 type FileDto {
+  id: ID!
   filename: String!
   path: String!
   mimetype: String
@@ -12,12 +13,7 @@ type ProfileDto {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  firstname: String
-  lastname: String
-  bio: String
-  avatar: FileDto
-  status: String!
-  visibility: String!
+  type: String!
 }
 
 """
@@ -27,9 +23,17 @@ scalar DateTime
 
 type UserDto {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  avatar: FileDto
+  status: String!
+  visibility: String!
+  firstname: String
+  lastname: String
+  bio: String
+  phone: String
   username: String!
   email: String!
-  status: String!
   profile: ProfileDto
 }
 
@@ -63,6 +67,9 @@ type OrganizationDto {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
+  avatar: FileDto
+  status: String!
+  visibility: String!
   name: String!
   description: String
   profileImage: FileDto
@@ -72,7 +79,7 @@ type OrganizationMemberDto {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  profile: ProfileDto!
+  user: UserDto!
   isAdmin: Boolean!
 }
 
@@ -144,11 +151,6 @@ input SignInInput {
 
 input ProfileInput {
   id: String
-  avatarId: String
-  firstname: String
-  lastname: String
-  bio: String
-  visibility: String
 }
 
 input WalletTransactionInput {
@@ -160,13 +162,15 @@ input WalletTransactionInput {
 
 input OrganizationInput {
   id: ID
-  name: String!
+  avatarId: String
+  visibility: String
+  name: String
   description: String
   profileImageId: ID
 }
 
 input OrganizationMemberInput {
-  profileId: ID!
+  userId: ID!
   organizationId: ID!
   isAdmin: Boolean! = false
 }

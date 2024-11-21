@@ -1,12 +1,12 @@
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
-import { Profile } from '../profile/profile.entity';
 import { Organization } from './organization.entity';
+import User from '../iam/user/user.entity';
+import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 
 @Entity()
 export class OrganizationMember extends BaseAuditEntity {
-  @ManyToOne(() => Profile, (profile) => profile.memberships)
-  public profile: Profile;
+  @ManyToOne(() => User, (user) => user.memberships)
+  public user: User;
 
   @ManyToOne(() => Organization, (organization) => organization.members)
   public organization: Organization;

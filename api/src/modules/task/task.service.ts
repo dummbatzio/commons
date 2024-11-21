@@ -32,6 +32,9 @@ export class TaskService {
     const tasks = await this.taskRepository.findAndCount({
       relations: ['categories', 'categories.parent', 'series'],
       where: { parent: IsNull() },
+      order: {
+        series: { due: 'ASC' },
+      },
       take,
       skip,
     });

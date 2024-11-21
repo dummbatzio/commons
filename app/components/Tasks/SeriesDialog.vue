@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import type { Task } from '~/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { DateTime } from 'luxon';
 
 interface SeriesDialogProps {
     task: Task
@@ -43,7 +44,9 @@ const series = computed(() => task.series?.filter(x => x.status === "open").slic
                     </TableHeader>
                     <TableBody>
                         <TableRow v-for="s in series">
-                            <TableCell>{{ s.due }}</TableCell>
+                            <TableCell>{{ s.due ?
+                                DateTime.fromISO(s.due.toString()).toLocaleString(DateTime.DATETIME_SHORT) :
+                                "n/a" }}</TableCell>
                             <TableCell>{{ s.status }}</TableCell>
                         </TableRow>
                     </TableBody>

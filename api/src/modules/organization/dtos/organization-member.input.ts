@@ -3,7 +3,7 @@ import { Field, ID, InputType } from '@nestjs/graphql';
 @InputType()
 export class OrganizationMemberInput {
   @Field(() => ID)
-  public profileId: string;
+  public userId: string;
 
   @Field(() => ID)
   public organizationId: string;

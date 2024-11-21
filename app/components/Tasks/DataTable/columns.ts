@@ -57,11 +57,22 @@ export const columns = ({
     columnHelper.accessor("due", {
       header: "Fälligkeit",
       cell: ({ row }) => {
-        if (!row.getValue("due")) {
-          return h("div", {}, "keine");
+        const { type, due, series } = row.original;
+
+        if (type === "series" && series?.length && series?.at(0)?.due) {
+          const nextDue = DateTime.fromISO(series!.at(0)!.due!.toString());
+          return h("div", { class: "flex flex-col gap-1" }, [
+            h("span", { class: "text-xs text-muted-foreground" }, "(nächste)"),
+            h("div", {}, nextDue.toLocaleString(DateTime.DATETIME_SHORT)),
+          ]);
         }
-        const date = DateTime.fromISO(row.getValue("due"));
-        return h("div", {}, date.toLocaleString(DateTime.DATETIME_SHORT));
+
+        if (type === "single" && due) {
+          const date = DateTime.fromISO(due.toString());
+          return h("div", {}, date.toLocaleString(DateTime.DATETIME_SHORT));
+        }
+
+        return h("div", {}, "keine");
       },
     }),
     columnHelper.accessor("expense", {

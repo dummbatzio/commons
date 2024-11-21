@@ -1,53 +1,26 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
-import { VerificationStatus } from 'src/common/enums/verification-status.enum';
-import { Visibility } from 'src/common/enums/visibility.enum';
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
-import { File } from '../file/file.entity';
-import { OrganizationMember } from '../organization/organization-member.entity';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Wallet } from '../wallet/wallet.entity';
 import { Assignment } from '../task/assignment.entity';
+import { ProfileType } from './enums/profile-type.enum';
+import User from '../iam/user/user.entity';
+import { Organization } from '../organization/organization.entity';
+import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 
 @Entity()
 export class Profile extends BaseAuditEntity {
-  @ManyToOne(() => File, { nullable: true, eager: true })
-  @JoinColumn({ name: 'avatar_id' })
-  public avatar: File;
-
-  @Column({ nullable: true })
-  public firstname: string;
-
-  @Column({ nullable: true })
-  public lastname: string;
-
-  @Column({ nullable: true })
-  public bio: string;
-
-  @Column({ nullable: true })
-  public phone: string;
-
   @Column({
-    type: 'varchar',
-    length: 100,
-    default: VerificationStatus.UNVERIFIED,
+    type: 'enum',
+    enum: ProfileType,
   })
-  status: VerificationStatus;
+  type: ProfileType;
 
-  @Column({ type: 'varchar', length: 100, default: Visibility.PRIVATE })
-  visibility: Visibility;
+  @OneToOne(() => User, (user) => user.profile, { nullable: true })
+  user: User;
 
-  @OneToMany(
-    () => OrganizationMember,
-    (organizationMember) => organizationMember.profile,
-  )
-  memberships: OrganizationMember[];
+  @OneToOne(() => Organization, (organization) => organization.profile, {
+    nullable: true,
+  })
+  organization: Organization;
 
   @OneToOne(() => Wallet)
   @JoinColumn()

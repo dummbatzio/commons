@@ -1,6 +1,6 @@
-import BaseAuditEntity from 'src/common/database/base-audit.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { WalletTransaction } from './wallet-transaction.entity';
+import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 
 @Entity()
 export class Wallet extends BaseAuditEntity {

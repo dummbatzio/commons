@@ -15,14 +15,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import User from './user/user.entity';
 import { ProfileModule } from '../profile/profile.module';
 import { UserService } from './user/user.service';
+import { UserController } from './user/user.controller';
+import { FileModule } from '../file/file.module';
+import Agent from 'src/common/entities/agent.entity';
 
 @Module({
   imports: [
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([Agent, User]),
     RedisModule,
     ProfileModule,
+    FileModule,
   ],
   providers: [
     {
@@ -40,5 +44,6 @@ import { UserService } from './user/user.service';
     UserService,
   ],
   exports: [UserService],
+  controllers: [UserController],
 })
 export class IamModule {}

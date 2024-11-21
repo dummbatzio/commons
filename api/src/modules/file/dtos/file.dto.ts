@@ -1,7 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { BaseDto } from 'src/common/dtos/base.dto';
 
 @ObjectType()
-export class FileDto {
+export class FileDto extends BaseDto {
   @Field()
   public filename: string;
 
