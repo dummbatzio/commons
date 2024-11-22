@@ -6,14 +6,12 @@ import { Assignment } from './assignment.entity';
 import { TaskResolver } from './task.resolver';
 import { TaskService } from './task.service';
 import { TaskCategoryService } from './task-category.service';
-import { LinkModule } from '../link/link.module';
 import { TaskLink } from './task-link.entity';
 import { TaskLinkService } from './task-link.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task, TaskCategory, TaskLink, Assignment]),
-    LinkModule,
   ],
   providers: [TaskResolver, TaskService, TaskCategoryService, TaskLinkService],
 })
