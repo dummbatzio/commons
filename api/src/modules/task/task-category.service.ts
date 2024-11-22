@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { IsNull, Like, Repository } from 'typeorm';
 import { TaskCategory } from './task-category.entity';
 import {
   TaskCategoryArgs,
@@ -32,7 +32,7 @@ export class TaskCategoryService {
 
     const taskCategories = await this.taskCategoryRepository.find({
       where: {
-        parent,
+        parent: !parent ? IsNull() : parent,
         name: Like(`%${nameLike ?? ''}%`),
       },
     });

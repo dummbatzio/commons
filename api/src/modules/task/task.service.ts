@@ -15,12 +15,14 @@ import { TaskStatus } from './enums/task-status.enum';
 import { TaskRepeat } from './enums/task-repeat.enum';
 import { DateTime } from 'luxon';
 import { Cron } from '@nestjs/schedule';
+import { TaskLinkService } from './task-link.service';
 
 @Injectable()
 export class TaskService {
   private readonly logger = new Logger(TaskService.name, { timestamp: true });
 
   constructor(
+    private readonly linkService: TaskLinkService,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
     @InjectRepository(TaskCategory)
@@ -30,7 +32,7 @@ export class TaskService {
   async findAll(args: PaginationArgs = { skip: 0, take: 25 }) {
     const { skip, take } = args;
     const tasks = await this.taskRepository.findAndCount({
-      relations: ['categories', 'categories.parent', 'series'],
+      relations: ['categories', 'categories.parent', 'series', 'links'],
       where: { parent: IsNull() },
       order: {
         series: { due: 'ASC' },
@@ -43,8 +45,9 @@ export class TaskService {
   }
 
   async createOrUpdate(input: TaskInput) {
-    const { id, categoryIds, ...taskData } = input;
+    const { id, categoryIds, links, ...taskData } = input;
     let categories = [];
+    let newOrUpdatedTask = null;
 
     if (categoryIds) {
       categories = await this.taskCategoryRepository.find({
@@ -63,17 +66,34 @@ export class TaskService {
         where: {
           id,
         },
-        relations: ['series'],
+        relations: ['series', 'links'],
       });
 
       if (!task) {
         throw new NotFoundException('Task not found.');
       }
 
-      return await this._update(task, categories, taskData);
+      newOrUpdatedTask = await this._update(task, categories, taskData);
+    } else {
+      newOrUpdatedTask = await this._create(categories, taskData);
     }
 
-    return await this._create(categories, taskData);
+    if (newOrUpdatedTask.type === TaskType.SERIES) {
+      const taskSeries = await this._updateTaskSeries(newOrUpdatedTask);
+      newOrUpdatedTask.series = taskSeries;
+    }
+
+    newOrUpdatedTask.links = await this.linkService.alignLinks(
+      newOrUpdatedTask.links,
+      links,
+    );
+
+    await this.taskRepository.save(newOrUpdatedTask);
+
+    // return fresh db entity
+    return await this.taskRepository.findOne({
+      where: { id: newOrUpdatedTask.id },
+    });
   }
 
   async delete(args: DeleteTaskArgs) {
@@ -124,11 +144,6 @@ export class TaskService {
       this.taskRepository.delete(task.series.map((t) => t.id));
     }
 
-    if (task.type === TaskType.SERIES) {
-      const taskSeries = await this._updateTaskSeries(task);
-      task.series = taskSeries;
-    }
-
     await this.taskRepository.save(task);
 
     return task;
@@ -142,17 +157,19 @@ export class TaskService {
     );
 
     const series: Task[] = task.series ?? [];
-    const seriesToUpdate = task.series.filter((t) => {
-      return (
-        t.status === TaskStatus.OPEN &&
-        futureDateTimeStrings.includes(t.due.toISOString())
-      );
-    });
-    const seriesToDelete = task.series.filter(
-      (t) =>
-        t.status === TaskStatus.OPEN &&
-        !futureDateTimeStrings.includes(t.due.toISOString()),
-    );
+    const seriesToUpdate =
+      task.series?.filter((t) => {
+        return (
+          t.status === TaskStatus.OPEN &&
+          futureDateTimeStrings.includes(t.due.toISOString())
+        );
+      }) ?? [];
+    const seriesToDelete =
+      task.series?.filter(
+        (t) =>
+          t.status === TaskStatus.OPEN &&
+          !futureDateTimeStrings.includes(t.due.toISOString()),
+      ) ?? [];
     const seriesDatesToCreate = futureDateTimeStrings.filter(
       (d) => !seriesToUpdate.find((s) => s.due.toISOString() === d),
     );
@@ -266,7 +283,7 @@ export class TaskService {
 
     for (const task of openSeriesTasks) {
       const now = DateTime.now().toUTC().toJSDate();
-      const overdueTasks = task.series.filter(
+      const overdueTasks = task.series?.filter(
         (s) => s.status === TaskStatus.OPEN && s.due < now,
       );
 
@@ -290,9 +307,9 @@ export class TaskService {
 
       const series = await this._updateTaskSeries(task);
       if (
-        task.series.length !== series.length ||
+        task.series?.length !== series.length ||
         task.series
-          .map((s) => s.id)
+          ?.map((s) => s.id)
           .some((id) => !series.map((x) => x.id).includes(id))
       ) {
         task.series = series;

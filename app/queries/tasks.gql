@@ -1,3 +1,9 @@
+fragment TaskLinkFields on TaskLinkDto {
+  id
+  label
+  url
+}
+
 fragment TaskCategoryFields on TaskCategoryDto {
   id
   name
@@ -30,6 +36,9 @@ fragment TaskFields on TaskDto {
     id
     status
     due
+  }
+  links {
+    ...TaskLinkFields
   }
 }
 

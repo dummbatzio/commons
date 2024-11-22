@@ -13,6 +13,7 @@ import { Assignment } from './assignment.entity';
 import { TaskPriority } from './enums/task-priority.enum';
 import { TaskRepeat } from './enums/task-repeat.enum';
 import BaseAuditEntity from 'src/common/entities/base-audit.entity';
+import { TaskLink } from './task-link.entity';
 
 @Entity()
 export class Task extends BaseAuditEntity {
@@ -39,7 +40,9 @@ export class Task extends BaseAuditEntity {
   @Column({ default: TaskPriority.NONE })
   public priority: TaskPriority;
 
-  @ManyToMany(() => TaskCategory, { eager: true, onDelete: 'CASCADE' })
+  @ManyToMany(() => TaskCategory, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   categories: TaskCategory[];
 
@@ -65,15 +68,21 @@ export class Task extends BaseAuditEntity {
 
   @ManyToOne(() => Task, (task) => task.series, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   public parent: Task;
 
   @OneToMany(() => Task, (task) => task.parent, {
-    nullable: true,
-    onDelete: 'CASCADE',
+    cascade: true,
   })
   public series: Task[];
 
-  @OneToMany(() => Assignment, (assignment) => assignment.task)
+  @OneToMany(() => Assignment, (assignment) => assignment.task, {
+    onDelete: 'CASCADE',
+  })
   public assignment: Assignment;
+
+  @OneToMany(() => TaskLink, (link) => link.task, { nullable: true })
+  @JoinTable()
+  links: TaskLink[];
 }

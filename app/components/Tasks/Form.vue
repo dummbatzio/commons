@@ -9,6 +9,7 @@ import { Checkbox } from '../ui/checkbox';
 import { TaskPriority, TaskRepeat } from '~/types/tasks';
 import { DateTime, Duration } from 'luxon';
 import type { ComboboxItem } from '../Form/Combobox.vue';
+import { linkListSchema } from '../Form/schema';
 
 interface TaskProps {
     task?: Task
@@ -37,7 +38,8 @@ const schema = toTypedSchema(
         category: comboboxSchema.optional(),
         subcategories: z.array(comboboxSchema).optional(),
         type: z.string().default("single").nullable(),
-        repeat: z.nativeEnum(TaskRepeat).optional()
+        repeat: z.nativeEnum(TaskRepeat).optional(),
+        links: z.array(linkListSchema).optional(),
     }).superRefine((data, ctx) => {
         if (data.type === "series") {
             if (!data.repeat) {
@@ -227,7 +229,9 @@ defineExpose({
                         <FormLabel>Kategorie</FormLabel>
                         <FormCombobox name="category" :form-values="values" :set-field-value="setFieldValue"
                             placeholder="Kategorie..." :create="createCategory" :fetch-suggestions="async () => {
-                                const { taskCategories } = await GqlGetTaskCategories()
+                                const { taskCategories } = await GqlGetTaskCategories({
+                                    parentId: null
+                                })
                                 return taskCategories.map(c => ({
                                     value: c.id,
                                     label: c.name
@@ -320,6 +324,13 @@ defineExpose({
                         <FormMessage class="text-xs" />
                     </FormItem>
                 </FormField>
+            </div>
+
+            <Separator class="col-span-full my-2" />
+
+            <div class="col-span-full">
+                <h5 class="text-sm font-medium leading-none">Links</h5>
+                <FormLinkList name="links" :form-values="values" :set-field-value="setFieldValue" />
             </div>
             <!-- <FormField name="description">
                         <FormItem class="grid gap">

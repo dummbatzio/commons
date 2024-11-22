@@ -46,3 +46,9 @@ export interface Task {
   parent?: Task;
   series?: Task[];
 }
+
+export interface Link {
+  id?: string;
+  label: string;
+  url: string;
+}

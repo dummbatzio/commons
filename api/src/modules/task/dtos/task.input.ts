@@ -3,6 +3,7 @@ import { TaskType } from '../enums/task-type.enum';
 import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
 import { TaskPriority } from '../enums/task-priority.enum';
 import { TaskRepeat } from '../enums/task-repeat.enum';
+import { TaskLinkInput } from './task-link.input';
 
 @ArgsType()
 export class DeleteTaskArgs {
@@ -41,4 +42,7 @@ export class TaskInput extends BaseAuditDto {
 
   @Field({ nullable: true, defaultValue: TaskPriority.NONE })
   repeat: TaskRepeat;
+
+  @Field(() => [TaskLinkInput], { nullable: true })
+  links: TaskLinkInput[];
 }

@@ -89,6 +89,12 @@ type TaskCategoryDto {
   parent: TaskCategoryDto
 }
 
+type TaskLinkDto {
+  id: ID!
+  label: String!
+  url: String!
+}
+
 type TaskDto {
   id: ID!
   createdAt: DateTime!
@@ -105,6 +111,7 @@ type TaskDto {
   repeat: String
   parent: TaskDto
   series: [TaskDto!]
+  links: [TaskLinkDto!]
 }
 
 type PaginatedTasksDto {
@@ -186,6 +193,13 @@ input TaskInput {
   factor: Float! = 1
   due: DateTime
   repeat: String = "none"
+  links: [TaskLinkInput!]
+}
+
+input TaskLinkInput {
+  id: ID
+  label: String!
+  url: String!
 }
 
 input TaskCategoryInput {

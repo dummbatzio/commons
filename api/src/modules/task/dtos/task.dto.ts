@@ -5,6 +5,7 @@ import { TaskStatus } from '../enums/task-status.enum';
 import { TaskCategoryDto } from './task-category.dto';
 import { TaskPriority } from '../enums/task-priority.enum';
 import { TaskRepeat } from '../enums/task-repeat.enum';
+import { TaskLinkDto } from './task-link.dto';
 
 @ObjectType()
 export class TaskDto extends BaseAuditDto {
@@ -43,4 +44,7 @@ export class TaskDto extends BaseAuditDto {
 
   @Field(() => [TaskDto], { nullable: true })
   public series: TaskDto[];
+
+  @Field(() => [TaskLinkDto], { nullable: true })
+  public links: TaskLinkDto[];
 }
