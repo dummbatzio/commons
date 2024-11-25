@@ -1,7 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { DeleteTaskArgs, TaskInput } from './dtos/task.input';
 import { TaskDto } from './dtos/task.dto';
-import { PaginationArgs } from 'src/common/dtos/pagination.input';
 import { TaskService } from './task.service';
 import { PaginatedTasksDto } from './dtos/paginated-tasks.dto';
 import { Auth } from '../iam/authentication/decorators/auth.decorator';
@@ -12,18 +11,25 @@ import {
   TaskCategoryInput,
 } from './dtos/task-category.input';
 import { TaskCategoryDto } from './dtos/task-category.dto';
+import { ActiveUser } from '../iam/authentication/decorators/active-user.decorator';
+import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
+import { AssignmentService } from './assignment.service';
+import { AssignmentInput } from './dtos/assignment.input';
+import { AssignmentDto } from './dtos/assignment.dto';
+import { TaskFilterArgs } from './dtos/task-filter.args';
 
 @Resolver()
-@Auth(AuthType.None)
+@Auth(AuthType.Bearer)
 export class TaskResolver {
   constructor(
     private readonly taskService: TaskService,
     private readonly taskCategoryService: TaskCategoryService,
+    private readonly assignmentService: AssignmentService,
   ) {}
 
   // todo: filter status, filter type
   @Query(() => PaginatedTasksDto, { name: 'tasks' })
-  async findAllTasks(@Args() args: PaginationArgs) {
+  async findAllTasks(@Args() args: TaskFilterArgs) {
     const [items, totalCount] = await this.taskService.findAll(args);
 
     return {
@@ -48,6 +54,14 @@ export class TaskResolver {
   async deleteTask(@Args() args: DeleteTaskArgs) {
     await this.taskService.delete(args);
     return true;
+  }
+
+  @Mutation(() => AssignmentDto, { name: 'assignTask' })
+  async assignTask(
+    @Args('input') input: AssignmentInput,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return await this.assignmentService.assignToUser(input, user);
   }
 
   @Query(() => [TaskCategoryDto], { name: 'taskCategories' })

@@ -40,6 +40,12 @@ export const columns = ({
         ]);
       },
     }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: ({ row }) => {
+        return h("div", {}, row.getValue("status"));
+      },
+    }),
     columnHelper.accessor("priority", {
       header: "Prio",
       cell: ({ row }) => h("div", {}, row.getValue("priority")),

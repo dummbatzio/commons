@@ -6,8 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
-import { In, IsNull, Repository } from 'typeorm';
-import { PaginationArgs } from 'src/common/dtos/pagination.input';
+import { FindOptionsWhere, Not, In, IsNull, Repository } from 'typeorm';
 import { DeleteTaskArgs, TaskInput } from './dtos/task.input';
 import { TaskCategory } from './task-category.entity';
 import { TaskType } from './enums/task-type.enum';
@@ -16,6 +15,8 @@ import { TaskRepeat } from './enums/task-repeat.enum';
 import { DateTime } from 'luxon';
 import { Cron } from '@nestjs/schedule';
 import { TaskLinkService } from './task-link.service';
+import { TaskFilterArgs } from './dtos/task-filter.args';
+import { AssignmentService } from './assignment.service';
 
 @Injectable()
 export class TaskService {
@@ -23,17 +24,39 @@ export class TaskService {
 
   constructor(
     private readonly linkService: TaskLinkService,
+    private readonly assignmentService: AssignmentService,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
     @InjectRepository(TaskCategory)
     private taskCategoryRepository: Repository<TaskCategory>,
   ) {}
 
-  async findAll(args: PaginationArgs = { skip: 0, take: 25 }) {
-    const { skip, take } = args;
+  async findAll(args: TaskFilterArgs = { skip: 0, take: 25 }) {
+    const { skip, take, where } = args;
     const tasks = await this.taskRepository.findAndCount({
       relations: ['categories', 'categories.parent', 'series', 'links'],
-      where: { parent: IsNull() },
+      where: {
+        ...(where
+          ? {
+              ...('parent' in where
+                ? {
+                    parent:
+                      where.parent === null ? IsNull() : { id: where.parent },
+                  }
+                : {}),
+              ...(where.status?.length
+                ? {
+                    status: In(where.status),
+                  }
+                : {}),
+              ...(where.type
+                ? {
+                    type: where.type as TaskType,
+                  }
+                : {}),
+            }
+          : {}),
+      },
       order: {
         series: { due: 'ASC' },
       },
@@ -42,6 +65,13 @@ export class TaskService {
     });
 
     return tasks;
+  }
+
+  async findOneBy(where: FindOptionsWhere<Task> | FindOptionsWhere<Task>[]) {
+    return await this.taskRepository.findOne({
+      relations: ['series', 'parent'],
+      where,
+    });
   }
 
   async createOrUpdate(input: TaskInput) {
@@ -66,7 +96,7 @@ export class TaskService {
         where: {
           id,
         },
-        relations: ['series', 'links'],
+        relations: ['series', 'links', 'assignment'],
       });
 
       if (!task) {
@@ -160,14 +190,14 @@ export class TaskService {
     const seriesToUpdate =
       task.series?.filter((t) => {
         return (
-          t.status === TaskStatus.OPEN &&
+          [TaskStatus.OPEN, TaskStatus.PLANNED].includes(t.status) &&
           futureDateTimeStrings.includes(t.due.toISOString())
         );
       }) ?? [];
     const seriesToDelete =
       task.series?.filter(
         (t) =>
-          t.status === TaskStatus.OPEN &&
+          [TaskStatus.OPEN, TaskStatus.PLANNED].includes(t.status) &&
           !futureDateTimeStrings.includes(t.due.toISOString()),
       ) ?? [];
     const seriesDatesToCreate = futureDateTimeStrings.filter(
@@ -193,7 +223,7 @@ export class TaskService {
     }
 
     for (const due of seriesDatesToCreate) {
-      const { id, ...newTask } = task;
+      const { id, assignment, ...newTask } = task;
       const taskSeriesItem = await this.taskRepository.create({
         ...newTask,
         parent: task,
@@ -203,6 +233,14 @@ export class TaskService {
         repeat: TaskRepeat.NONE,
       });
       series.push(await this.taskRepository.save(taskSeriesItem));
+
+      // if series is assigned to profile, assign the new task as well
+      if (assignment) {
+        await this.assignmentService.assignToProfile({
+          taskId: taskSeriesItem.id,
+          profileId: assignment.profileId,
+        });
+      }
     }
 
     return series.filter(
@@ -278,13 +316,18 @@ export class TaskService {
     // all open tasks with type series
     const openSeriesTasks = await this.taskRepository.find({
       relations: ['categories', 'categories.parent', 'series'],
-      where: { status: TaskStatus.OPEN, type: TaskType.SERIES },
+      where: {
+        status: Not(In([TaskStatus.DONE, TaskStatus.CLOSED])),
+        type: TaskType.SERIES,
+      },
     });
 
     for (const task of openSeriesTasks) {
       const now = DateTime.now().toUTC().toJSDate();
       const overdueTasks = task.series?.filter(
-        (s) => s.status === TaskStatus.OPEN && s.due < now,
+        (s) =>
+          [TaskStatus.OPEN, TaskStatus.PLANNED].includes(s.status) &&
+          s.due < now,
       );
 
       for (const overdueTask of overdueTasks) {

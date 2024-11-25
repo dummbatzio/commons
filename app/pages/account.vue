@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const { refetch } = useUser();
-await refetch()
+const { fetch } = useUser();
+await fetch()
 </script>
 
 <template>

@@ -61,7 +61,7 @@ const onSubmit = async (values: any, props: any) => {
             </DialogHeader>
 
             <div class="py-4 overflow-y-auto px-6">
-                <TasksForm ref="form" :task="task" :loading="loading" @submit="onSubmit" />
+                <TaskForm ref="form" :task="task" :loading="loading" @submit="onSubmit" />
             </div>
 
             <DialogFooter class="flex gap-4 p-6 pt-0">

@@ -4,7 +4,7 @@ export const useUser = () => {
   const user: Ref<User | null> = useState("currentUser", () => null);
   const profile = computed(() => user.value?.profile);
 
-  const refetch = async () => {
+  const fetch = async () => {
     const { me } = await GqlMe();
     user.value = me;
   };
@@ -12,6 +12,6 @@ export const useUser = () => {
   return {
     user,
     profile,
-    refetch,
+    fetch,
   };
 };

@@ -18,5 +18,5 @@ defineProps<HeadlineProps>()
             <slot name="actions" />
         </div>
     </div>
-    <Separator v-if="!hideSeparator" class="mt-4 mb-6" />
+    <Separator v-if="!hideSeparator" class="mt-2 mb-6" />
 </template>

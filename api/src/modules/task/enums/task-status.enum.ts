@@ -1,6 +1,6 @@
 export enum TaskStatus {
   OPEN = 'open',
-  DOING = 'doing',
+  PLANNED = 'planned',
   DONE = 'done',
   CLOSED = 'closed',
   OVERDUE = 'overdue',

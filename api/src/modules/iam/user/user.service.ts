@@ -37,11 +37,17 @@ export class UserService implements AgentService<User> {
   }
 
   async findOneBy(where: any): Promise<User | null> {
-    return this.userRepository.findOneBy(where);
+    return this.userRepository.findOne({
+      relations: ['profile'],
+      where,
+    });
   }
 
   async findOneByOrFail(where: any): Promise<User | null> {
-    return this.userRepository.findOneByOrFail(where);
+    return this.userRepository.findOneOrFail({
+      relations: ['profile'],
+      where,
+    });
   }
 
   async verify(id: string): Promise<User> {

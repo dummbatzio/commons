@@ -1,54 +1,30 @@
 <script setup lang="ts">
-import { Button } from '~/components/ui/button';
-import type { Task } from '~/types';
+import { TaskStatus } from '~/types/tasks';
 
 const { page, limit } = usePagination();
 const { data, refresh } = await useAsyncData("tasks-result", async () => GqlGetPaginatedTasks({
+    where: {
+        parent: null,
+        status: [TaskStatus.OPEN]
+    },
     skip: (page.value - 1) * limit,
     take: limit
 }))
-const totalTasks = computed(() => data.value?.tasks.totalCount)
+// const totalTasks = computed(() => data.value?.tasks.totalCount)
 const tasks = computed(() => data.value?.tasks.items)
-
-const dialogData: Ref<{ open: boolean; task: Task | null }> = ref({
-    open: false,
-    task: null
-})
 
 const route = useRoute();
 watch(() => route.query, () => refresh())
-
-const onEdit = (task: Task) => {
-    dialogData.value = { open: true, task };
-}
-const onCopy = (task: Task) => {
-    const { id, ...taskCopy } = task
-    dialogData.value = {
-        open: true,
-        task: {
-            ...taskCopy,
-            title: `${taskCopy.title} - KOPIE`
-        }
-    };
-}
-
-const onClose = () => {
-    dialogData.value = { open: false, task: null };
-}
-const onSuccess = () => {
-    onClose();
-    refresh();
-}
 </script>
 
 <template>
     <Container>
-        <Headline>Tasks
-            <template #actions>
-                <Button @click="dialogData = { open: true, task: null }">Aufgabe hinzufügen</Button>
-            </template>
-        </Headline>
-        <TasksDataTable :tasks="tasks" :total="totalTasks" @edit="onEdit" @copy="onCopy" @refresh="refresh" />
+        <LayoutSectionHeading>Tasks</LayoutSectionHeading>
+        <div v-if="tasks?.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <TaskCard v-for="task in tasks" :task="task" @assigned="refresh()" />
+        </div>
+        <div v-else>
+            <p class="font-light">Gerade sind keine offenen Aufgaben gepflegt.</p>
+        </div>
     </Container>
-    <TasksEditDialog :open="dialogData.open" :task="dialogData.task" @close="onClose" @success="onSuccess" />
 </template>

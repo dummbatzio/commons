@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: true },
+  experimental: {
+    asyncContext: true,
+  },
   app: {
     head: {
       link: [
@@ -37,7 +40,7 @@ export default defineNuxtConfig({
       GQL_HOST: "http://localhost:5000/graphql", // overwritten by process.env.GQL_HOST
     },
     session: {
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 60 * 24, // 1 day
     },
   },
   modules: [

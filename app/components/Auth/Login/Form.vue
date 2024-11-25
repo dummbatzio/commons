@@ -6,7 +6,8 @@ import { LoadingButton } from '~/components/ui/button';
 import type { FormError } from '~/components/Form/Errors.vue';
 
 const { query } = useRoute()
-const { fetch, session } = useUserSession()
+const { fetch: fetchUser } = useUser();
+const { fetch: fetchSession, session } = useUserSession()
 
 const formSchema = toTypedSchema(z.object({
     email: z.string().email(),
@@ -30,9 +31,10 @@ const onSubmit = form.handleSubmit(async (values) => {
             body: values
         })
 
-        await fetch();
+        await fetchSession();
 
         useGqlToken(session.value.accessToken);
+        await fetchUser();
 
         await navigateTo("/app/dashboard")
     } catch (err: any) {

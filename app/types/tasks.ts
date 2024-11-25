@@ -1,3 +1,11 @@
+export enum TaskStatus {
+  OPEN = "open",
+  PLANNED = "planned",
+  DONE = "done",
+  CLOSED = "closed",
+  OVERDUE = "overdue",
+}
+
 export enum TaskPriority {
   NONE = "none",
   LOW = "low",

@@ -16,6 +16,13 @@ mutation SignInUser($input: SignInInput!) {
   }
 }
 
+mutation RefreshTokens($token: String!) {
+  refreshTokens(token: $token) {
+    accessToken
+    refreshToken
+  }
+}
+
 query Me {
   me {
     ...UserFields

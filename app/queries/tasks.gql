@@ -42,8 +42,12 @@ fragment TaskFields on TaskDto {
   }
 }
 
-query GetPaginatedTasks($skip: Int, $take: Int) {
-  tasks(skip: $skip, take: $take) {
+query GetPaginatedTasks(
+  $skip: Int!
+  $take: Int!
+  $where: TaskFilterWhereInput
+) {
+  tasks(skip: $skip, take: $take, where: $where) {
     totalCount
     skip
     take
@@ -67,6 +71,17 @@ mutation UpdateTask($input: TaskInput!) {
 
 mutation DeleteTask($id: ID!) {
   deleteTask(id: $id)
+}
+
+mutation AssignTask($input: AssignmentInput!) {
+  assignTask(input: $input) {
+    profile {
+      id
+    }
+    task {
+      id
+    }
+  }
 }
 
 query GetTaskCategories($parentId: String, $nameLike: String) {
