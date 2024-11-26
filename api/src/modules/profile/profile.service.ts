@@ -27,8 +27,20 @@ export class ProfileService {
   ) {}
 
   async getById(profileId: string) {
-    return await this.profileRepository.findOneBy({
-      id: profileId,
+    return await this.profileRepository.findOne({
+      where: {
+        id: profileId,
+      },
+    });
+  }
+
+  async getByUserId(userId: string) {
+    return await this.profileRepository.findOne({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
     });
   }
 

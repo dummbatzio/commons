@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   Logger,
+  MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,12 +18,15 @@ import { Cron } from '@nestjs/schedule';
 import { TaskLinkService } from './task-link.service';
 import { TaskFilterArgs } from './dtos/task-filter.args';
 import { AssignmentService } from './assignment.service';
+import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class TaskService {
   private readonly logger = new Logger(TaskService.name, { timestamp: true });
 
   constructor(
+    private readonly profileService: ProfileService,
     private readonly linkService: TaskLinkService,
     private readonly assignmentService: AssignmentService,
     @InjectRepository(Task)
@@ -58,6 +62,51 @@ export class TaskService {
           : {}),
       },
       order: {
+        series: { due: 'ASC' },
+      },
+      take,
+      skip,
+    });
+
+    return tasks;
+  }
+
+  async findAllByUser(
+    args: TaskFilterArgs = { skip: 0, take: 25 },
+    userId: string,
+  ) {
+    const profile = await this.profileService.getByUserId(userId);
+    if (!profile) {
+      throw new NotFoundException('Profile not found.');
+    }
+
+    const { skip, take, where } = args;
+    const tasks = await this.taskRepository.findAndCount({
+      relations: ['categories', 'categories.parent', 'series', 'links'],
+      where: {
+        ...(where
+          ? {
+              ...('parent' in where
+                ? {
+                    parent:
+                      where.parent === null ? IsNull() : { id: where.parent },
+                  }
+                : {}),
+              ...(where.status?.length
+                ? {
+                    status: In(where.status),
+                  }
+                : {}),
+              ...(where.type
+                ? {
+                    type: where.type as TaskType,
+                  }
+                : {}),
+            }
+          : {}),
+      },
+      order: {
+        due: 'ASC',
         series: { due: 'ASC' },
       },
       take,
@@ -147,6 +196,34 @@ export class TaskService {
     throw new BadRequestException('Missing ID.');
   }
 
+  async complete(taskId: string, currentUser?: ActiveUserData) {
+    const task = await this.findOneBy({ id: taskId });
+    if (!task) {
+      throw new NotFoundException('Task not found.');
+    }
+
+    if (currentUser) {
+      const userProfile = await this.profileService.getByUserId(
+        currentUser.sub,
+      );
+
+      if (task.assignments.every((a) => a.profileId !== userProfile?.id)) {
+        throw new MethodNotAllowedException(
+          'User is not allowed to complete this task.',
+        );
+      }
+    }
+
+    task.status = TaskStatus.DONE;
+    await this.taskRepository.save(task);
+
+    // TODO: SPLIT AMOUNT TO ASSIGNED WALLETS
+    // const amount = task.expense * task.factor;
+    // this.walletService.deposit(amount, `Aufgabe ${task.title}`, {entity: 'task', id: task.id})
+
+    return task;
+  }
+
   protected async _create(
     categories: TaskCategory[],
     input: Partial<TaskInput>,
@@ -223,7 +300,12 @@ export class TaskService {
     }
 
     for (const due of seriesDatesToCreate) {
-      const { id, assignment, ...newTask } = task;
+      // if there is already a series task (any status), continue
+      if (series.find((x) => x.due.toISOString() === due)) {
+        continue;
+      }
+
+      const { id, assignments, ...newTask } = task;
       const taskSeriesItem = await this.taskRepository.create({
         ...newTask,
         parent: task,
@@ -235,11 +317,14 @@ export class TaskService {
       series.push(await this.taskRepository.save(taskSeriesItem));
 
       // if series is assigned to profile, assign the new task as well
-      if (assignment) {
-        await this.assignmentService.assignToProfile({
-          taskId: taskSeriesItem.id,
-          profileId: assignment.profileId,
-        });
+      if (assignments?.length) {
+        assignments.map(
+          async (assignment) =>
+            await this.assignmentService.assignToProfile({
+              taskId: taskSeriesItem.id,
+              profileId: assignment.profileId,
+            }),
+        );
       }
     }
 

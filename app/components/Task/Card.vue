@@ -8,28 +8,26 @@ import {
     CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
 import { Dumbbell, HandCoins } from 'lucide-vue-next';
 import { DateTime } from 'luxon';
-import { toast } from '../ui/toast';
+import { TaskStatus } from '~/types/tasks';
 
 interface TaskCard {
     task: Task
 }
 const { task } = defineProps<TaskCard>()
-const emit = defineEmits(["assigned"])
-
-const { user, profile } = useUser()
-const loading = ref(false);
 
 const categories = computed(() => [
     ...task.categories?.filter(c => !c.parent) ?? [],
     ...task.categories?.filter(c => !!c.parent) ?? [],
 ])
 const dueFormatted = computed(() => {
-    if (task.type === "series" && task.series?.length && task.series?.at(0)?.due) {
-        const nextDue = DateTime.fromISO(task.series!.at(0)!.due!.toString());
-        return `Nächste Aufgabe fällig am ${nextDue.toLocaleString(DateTime.DATETIME_SHORT)}`
+    if (task.type === "series") {
+        const toBeDone = task.series?.filter(x => [TaskStatus.OPEN, TaskStatus.PLANNED].includes(x.status as TaskStatus))
+        if (toBeDone?.length && toBeDone.at(0)?.due) {
+            const nextDue = DateTime.fromISO(toBeDone.at(0)!.due!.toString());
+            return `Nächste Aufgabe fällig am ${nextDue.toLocaleString(DateTime.DATETIME_SHORT)}`
+        }
     }
 
     if (task.type === "single" && task.due) {
@@ -39,33 +37,6 @@ const dueFormatted = computed(() => {
 
     return null
 })
-const onAssign = async () => {
-    if (!profile.value?.id || !task?.id) {
-        return;
-    }
-
-    loading.value = true;
-
-    try {
-        await GqlAssignTask({
-            input: {
-                profileId: profile.value.id,
-                taskId: task.id
-            }
-        })
-
-        toast({
-            title: "Woohoo! Danke, dass du ein Teil bist.",
-            description: `Du hast die Aufgabe "${task.title}" übernommen. Weitere Informationen findest du in deinem Profil.`
-        })
-    } catch (error) {
-        console.log(error)
-    } finally {
-        loading.value = false
-    }
-
-
-}
 </script>
 
 <template>
@@ -99,8 +70,8 @@ const onAssign = async () => {
                         <span>{{ useFormatReproduction(task.expense * (task.factor ?? 1)) }}</span>
                     </div>
                 </div>
-                <div v-if="profile && task.status === 'open'">
-                    <Button @click="onAssign" :disabled="loading">Annehmen</Button>
+                <div v-if="$slots.actions">
+                    <slot name="actions" />
                 </div>
             </div>
         </CardFooter>

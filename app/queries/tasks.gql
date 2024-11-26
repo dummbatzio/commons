@@ -57,6 +57,21 @@ query GetPaginatedTasks(
   }
 }
 
+query GetMyPaginatedTasks(
+  $skip: Int!
+  $take: Int!
+  $where: TaskFilterWhereInput
+) {
+  tasks(skip: $skip, take: $take, where: $where) {
+    totalCount
+    skip
+    take
+    items {
+      ...TaskFields
+    }
+  }
+}
+
 mutation CreateTask($input: TaskInput!) {
   createTask(input: $input) {
     ...TaskFields
@@ -74,13 +89,13 @@ mutation DeleteTask($id: ID!) {
 }
 
 mutation AssignTask($input: AssignmentInput!) {
-  assignTask(input: $input) {
-    profile {
-      id
-    }
-    task {
-      id
-    }
+  assignTask(input: $input)
+}
+
+mutation CompleteTask($taskId: String!) {
+  completeTask(taskId: $taskId) {
+    id
+    status
   }
 }
 

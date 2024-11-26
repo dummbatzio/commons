@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(async (nuxtApp: any) => {
   const route = nuxtApp.$router.currentRoute.value;
-  const { loggedIn, session, clear } = useUserSession();
+  const { loggedIn, session } = useUserSession();
 
   if (loggedIn.value) {
     useGqlToken(session.value.accessToken);
@@ -11,7 +11,7 @@ export default defineNuxtPlugin(async (nuxtApp: any) => {
         (e: any) => e.extensions.code === "UNAUTHENTICATED"
       );
       if (unauthorized) {
-        clear();
+        await $fetch("/api/iam/refresh");
 
         if (
           (route.name as string).startsWith("app") ||

@@ -5,7 +5,7 @@
             <div class="flex flex-col gap-4">
                 <LayoutSectionHeading>Deine Aufgaben</LayoutSectionHeading>
                 <div>
-                    <AssignmentsMine />
+                    <AssignmentList />
                 </div>
             </div>
 

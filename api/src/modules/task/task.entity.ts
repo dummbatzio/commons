@@ -79,9 +79,8 @@ export class Task extends BaseAuditEntity {
 
   @OneToMany(() => Assignment, (assignment) => assignment.task, {
     eager: true,
-    onDelete: 'CASCADE',
   })
-  public assignment: Assignment;
+  assignments: Assignment[];
 
   @OneToMany(() => TaskLink, (link) => link.task, { nullable: true })
   @JoinTable()

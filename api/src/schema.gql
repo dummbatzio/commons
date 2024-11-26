@@ -121,18 +121,11 @@ type PaginatedTasksDto {
   items: [TaskDto!]!
 }
 
-type AssignmentDto {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  profile: ProfileDto!
-  task: TaskDto!
-}
-
 type Query {
   me: UserDto!
   myOrganizations: [OrganizationDto!]!
   tasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
+  myTasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
   taskCategories(parentId: String, nameLike: String): [TaskCategoryDto!]!
 }
 
@@ -156,7 +149,8 @@ type Mutation {
   createTask(input: TaskInput!): TaskDto!
   updateTask(input: TaskInput!): TaskDto!
   deleteTask(id: ID!): Boolean!
-  assignTask(input: AssignmentInput!): AssignmentDto!
+  assignTask(input: AssignmentInput!): Boolean!
+  completeTask(taskId: String!): TaskDto!
   createTaskCategory(input: TaskCategoryInput!): TaskCategoryDto!
 }
 

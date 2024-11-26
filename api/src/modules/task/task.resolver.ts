@@ -17,6 +17,7 @@ import { AssignmentService } from './assignment.service';
 import { AssignmentInput } from './dtos/assignment.input';
 import { AssignmentDto } from './dtos/assignment.dto';
 import { TaskFilterArgs } from './dtos/task-filter.args';
+import { CompleteTaskArgs } from './dtos/complete-task.args';
 
 @Resolver()
 @Auth(AuthType.Bearer)
@@ -27,10 +28,27 @@ export class TaskResolver {
     private readonly assignmentService: AssignmentService,
   ) {}
 
-  // todo: filter status, filter type
   @Query(() => PaginatedTasksDto, { name: 'tasks' })
   async findAllTasks(@Args() args: TaskFilterArgs) {
     const [items, totalCount] = await this.taskService.findAll(args);
+
+    return {
+      totalCount,
+      skip: args.skip,
+      take: args.take,
+      items,
+    };
+  }
+
+  @Query(() => PaginatedTasksDto, { name: 'myTasks' })
+  async findMyTasks(
+    @Args() args: TaskFilterArgs,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    const [items, totalCount] = await this.taskService.findAllByUser(
+      args,
+      user.sub,
+    );
 
     return {
       totalCount,
@@ -56,12 +74,21 @@ export class TaskResolver {
     return true;
   }
 
-  @Mutation(() => AssignmentDto, { name: 'assignTask' })
+  @Mutation(() => Boolean, { name: 'assignTask' })
   async assignTask(
     @Args('input') input: AssignmentInput,
     @ActiveUser() user: ActiveUserData,
   ) {
-    return await this.assignmentService.assignToUser(input, user);
+    await this.assignmentService.assignToUser(input, user);
+    return true;
+  }
+
+  @Mutation(() => TaskDto, { name: 'completeTask' })
+  async completeTask(
+    @Args() args: CompleteTaskArgs,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return await this.taskService.complete(args.taskId, user);
   }
 
   @Query(() => [TaskCategoryDto], { name: 'taskCategories' })

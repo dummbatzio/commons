@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { UserService } from '../iam/user/user.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
@@ -62,26 +62,38 @@ export class AssignmentService {
       throw new MethodNotAllowedException('Cannot assign unopen task.');
     }
 
-    const assignments = this.assignmentRepository.create([
+    const assignmentsData = [
       {
-        profile,
-        task,
+        profileId: profile.id,
+        // profile,
+        taskId: task.id,
+        // task,
       },
       ...(task.type === TaskType.SERIES && task.series?.length
         ? task.series.map((s: any) => ({
-            profile,
-            task: s,
+            profileId: profile.id,
+            // profile,
+            taskId: s.id,
+            // task: s,
           }))
         : []),
-    ]);
+    ];
+
+    const assignments = assignmentsData.map((data) =>
+      this.assignmentRepository.create(data),
+    );
 
     await this.assignmentRepository.save(assignments);
 
-    for (const assignment of assignments) {
-      assignment.task.status = TaskStatus.PLANNED;
-      await this.taskRepository.save(task);
-    }
+    const tasksToUpdate = await this.taskRepository.find({
+      where: {
+        id: In(assignments.map((a) => a.taskId)),
+      },
+    });
 
-    return assignments.at(0);
+    for (const t of tasksToUpdate) {
+      t.status = TaskStatus.PLANNED;
+      await this.taskRepository.save(t);
+    }
   }
 }

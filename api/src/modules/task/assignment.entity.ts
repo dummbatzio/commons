@@ -5,19 +5,21 @@ import BaseAuditEntity from 'src/common/entities/base-audit.entity';
 
 @Entity()
 export class Assignment extends BaseAuditEntity {
-  @Column({ nullable: true })
+  @Column()
   profileId: string;
 
   @ManyToOne(() => Profile, (profile) => profile.assignments, {
     onDelete: 'CASCADE',
+    eager: false,
   })
   profile: Profile;
 
-  @Column({ nullable: true })
+  @Column()
   taskId: string;
 
-  @ManyToOne(() => Task, (task) => task.assignment, {
+  @ManyToOne(() => Task, (task) => task.assignments, {
     onDelete: 'CASCADE',
+    eager: false,
   })
   task: Task;
 }
