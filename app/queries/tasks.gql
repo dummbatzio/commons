@@ -62,7 +62,7 @@ query GetMyPaginatedTasks(
   $take: Int!
   $where: TaskFilterWhereInput
 ) {
-  tasks(skip: $skip, take: $take, where: $where) {
+  myTasks(skip: $skip, take: $take, where: $where) {
     totalCount
     skip
     take

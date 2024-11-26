@@ -15,7 +15,6 @@ import { ActiveUser } from '../iam/authentication/decorators/active-user.decorat
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { AssignmentService } from './assignment.service';
 import { AssignmentInput } from './dtos/assignment.input';
-import { AssignmentDto } from './dtos/assignment.dto';
 import { TaskFilterArgs } from './dtos/task-filter.args';
 import { CompleteTaskArgs } from './dtos/complete-task.args';
 

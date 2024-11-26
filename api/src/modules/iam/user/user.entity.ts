@@ -35,6 +35,7 @@ class User extends Agent {
   @OneToOne(() => Profile, {
     eager: true,
     cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   public profile: Profile;

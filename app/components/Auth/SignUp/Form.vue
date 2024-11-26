@@ -9,7 +9,7 @@ import { useToast } from '~/components/ui/toast';
 const { toast } = useToast();
 
 const formSchema = toTypedSchema(z.object({
-    username: z.string(),
+    username: z.string().trim().regex(/^[\S]+$/gm, "Keine Leerzeichen erlaubt"),
     email: z.string().email(),
     password: z.string().min(6)
 }))

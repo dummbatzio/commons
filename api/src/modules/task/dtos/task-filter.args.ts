@@ -2,7 +2,7 @@ import { ArgsType, Field, InputType } from '@nestjs/graphql';
 import { PaginationArgs } from 'src/common/dtos/pagination.args';
 
 @InputType()
-class TaskFilterWhereInput {
+export class TaskFilterWhereInput {
   @Field({ nullable: true })
   parent?: string | null;
 

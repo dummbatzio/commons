@@ -23,8 +23,8 @@ const { data, refresh } = await useAsyncData("my-tasks", async () => GqlGetMyPag
     skip: (page.value - 1) * limit,
     take: limit
 }))
-// const totalTasks = computed(() => data.value?.tasks.totalCount)
-const myTasks = computed(() => data.value?.tasks.items)
+const totalTasks = computed(() => data.value?.myTasks.totalCount)
+const myTasks = computed(() => data.value?.myTasks.items)
 
 const { fireCanon } = useConfetti()
 const onComplete = async (task: Task) => {

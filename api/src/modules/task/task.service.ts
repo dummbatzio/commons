@@ -36,39 +36,9 @@ export class TaskService {
   ) {}
 
   async findAll(args: TaskFilterArgs = { skip: 0, take: 25 }) {
-    const { skip, take, where } = args;
-    const tasks = await this.taskRepository.findAndCount({
-      relations: ['categories', 'categories.parent', 'series', 'links'],
-      where: {
-        ...(where
-          ? {
-              ...('parent' in where
-                ? {
-                    parent:
-                      where.parent === null ? IsNull() : { id: where.parent },
-                  }
-                : {}),
-              ...(where.status?.length
-                ? {
-                    status: In(where.status),
-                  }
-                : {}),
-              ...(where.type
-                ? {
-                    type: where.type as TaskType,
-                  }
-                : {}),
-            }
-          : {}),
-      },
-      order: {
-        series: { due: 'ASC' },
-      },
-      take,
-      skip,
-    });
+    const query = await this.getAllTasksQuery(args);
 
-    return tasks;
+    return await query.getManyAndCount();
   }
 
   async findAllByUser(
@@ -80,40 +50,51 @@ export class TaskService {
       throw new NotFoundException('Profile not found.');
     }
 
-    const { skip, take, where } = args;
-    const tasks = await this.taskRepository.findAndCount({
-      relations: ['categories', 'categories.parent', 'series', 'links'],
-      where: {
-        ...(where
-          ? {
-              ...('parent' in where
-                ? {
-                    parent:
-                      where.parent === null ? IsNull() : { id: where.parent },
-                  }
-                : {}),
-              ...(where.status?.length
-                ? {
-                    status: In(where.status),
-                  }
-                : {}),
-              ...(where.type
-                ? {
-                    type: where.type as TaskType,
-                  }
-                : {}),
-            }
-          : {}),
-      },
-      order: {
-        due: 'ASC',
-        series: { due: 'ASC' },
-      },
-      take,
-      skip,
+    const query = await this.getAllTasksQuery(args);
+
+    query.andWhere('assignment.profileId = :profileId', {
+      profileId: profile.id,
     });
 
-    return tasks;
+    return await query.getManyAndCount();
+  }
+
+  private async getAllTasksQuery(args: TaskFilterArgs) {
+    const { skip, take, where } = args;
+    const query = await this.taskRepository
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.assignments', 'assignment')
+      .leftJoinAndSelect('task.categories', 'category')
+      .leftJoinAndSelect('category.parent', 'parentCategory')
+      .leftJoinAndSelect('task.series', 'series')
+      .leftJoinAndSelect('task.links', 'links')
+      .orderBy('task.due', 'ASC')
+      .take(take)
+      .skip(skip);
+
+    if ('parent' in where) {
+      if (where.parent === null) {
+        query.andWhere('task.parent Is Null');
+      } else {
+        query.andWhere('task.parent.id = :parentId', {
+          parentId: where.parent,
+        });
+      }
+    }
+
+    if (where.status?.length) {
+      query.andWhere('task.status IN (:...statuses)', {
+        statuses: where.status,
+      });
+    }
+
+    if (where.type) {
+      query.andWhere('task.type = :type', {
+        type: where.type,
+      });
+    }
+
+    return query;
   }
 
   async findOneBy(where: FindOptionsWhere<Task> | FindOptionsWhere<Task>[]) {
