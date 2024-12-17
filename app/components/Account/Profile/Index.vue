@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { profile } = useUser()
+const { fetchProfile } = useUser()
+await fetchProfile();
 </script>
 
 <template>
@@ -8,7 +9,7 @@ const { profile } = useUser()
             Profile
         </LayoutSectionHeading>
         <div>
-            {{ profile }}
+            <WalletBalanceCard />
         </div>
     </div>
 </template>

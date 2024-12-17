@@ -259,7 +259,7 @@ const onSubmit = handleSubmit(async (values) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="reproduction">
-                                        Repro-Stunden
+                                        Repros
                                     </SelectItem>
                                     <SelectItem value="days">
                                         Euro

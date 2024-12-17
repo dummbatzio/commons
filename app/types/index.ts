@@ -23,6 +23,20 @@ export interface User {
 export interface Profile {
   id: string;
   type: string;
+  wallet?: Wallet | null;
+}
+
+export interface Wallet {
+  id: string;
+  balance: number;
+  transactions?: WalletTransaction;
+}
+
+export interface WalletTransaction {
+  id: string;
+  type: string;
+  amount: number;
+  comment: string;
 }
 
 export interface TaskCategory {

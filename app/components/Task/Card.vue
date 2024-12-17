@@ -63,11 +63,11 @@ const dueFormatted = computed(() => {
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <Dumbbell class="w-4 h-4" />
-                        <span>{{ useFormatReproduction(task.expense, true) }}</span>
+                        <span>{{ useFormatReproduction(task.expense, { showMinutes: true }) }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <HandCoins class="w-4 h-4" />
-                        <span>{{ useFormatReproduction(task.expense * (task.factor ?? 1)) }}</span>
+                        <span>{{ useFormatReproduction(task.expense * (task.factor ?? 1), { showUnit: true }) }}</span>
                     </div>
                 </div>
                 <div v-if="$slots.actions">

@@ -11,12 +11,14 @@ import { Assignment } from './assignment.entity';
 import { AssignmentService } from './assignment.service';
 import { IamModule } from '../iam/iam.module';
 import { ProfileModule } from '../profile/profile.module';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task, TaskCategory, TaskLink, Assignment]),
     IamModule,
     ProfileModule,
+    WalletModule,
   ],
   providers: [
     TaskResolver,

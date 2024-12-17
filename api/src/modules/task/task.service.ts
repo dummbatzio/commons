@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
-import { FindOptionsWhere, Not, In, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, Not, In, Repository } from 'typeorm';
 import { DeleteTaskArgs, TaskInput } from './dtos/task.input';
 import { TaskCategory } from './task-category.entity';
 import { TaskType } from './enums/task-type.enum';
@@ -20,6 +20,7 @@ import { TaskFilterArgs } from './dtos/task-filter.args';
 import { AssignmentService } from './assignment.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { ProfileService } from '../profile/profile.service';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class TaskService {
@@ -28,6 +29,7 @@ export class TaskService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly linkService: TaskLinkService,
+    private readonly walletService: WalletService,
     private readonly assignmentService: AssignmentService,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -193,14 +195,18 @@ export class TaskService {
           'User is not allowed to complete this task.',
         );
       }
+
+      // TODO: SPLIT AMOUNT TO ASSIGNED WALLETS
+      const amount = task.expense * task.factor;
+      this.walletService.deposit({
+        amount,
+        walletId: userProfile.wallet?.id,
+        comment: `Aufgabe #${task.id}: ${task.title}`,
+      });
     }
 
     task.status = TaskStatus.DONE;
     await this.taskRepository.save(task);
-
-    // TODO: SPLIT AMOUNT TO ASSIGNED WALLETS
-    // const amount = task.expense * task.factor;
-    // this.walletService.deposit(amount, `Aufgabe ${task.title}`, {entity: 'task', id: task.id})
 
     return task;
   }

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Wallet } from './wallet.entity';
 import { WalletTransaction } from './wallet-transaction.entity';
+import { WalletTransactionInput } from './dtos/wallet-transaction.input';
+import { TransactionType } from './enums/transaction-type.enum';
 
 @Injectable()
 export class WalletService {
@@ -20,20 +22,61 @@ export class WalletService {
     return emptyWallet;
   }
 
-  // async donate(input: WalletTransactionInput, currentUser: ActiveUserData) {
-  //   const senderUser = await this.userService.findOneBy({
-  //     id: currentUser.sub,
-  //   });
-  //   if (!senderUser) {
-  //     throw new NotFoundException('User not found.');
-  //   }
+  async getWalletWithBalance(walletId: string) {
+    const wallet = await this.walletRepository.findOne({
+      relations: ['transactions'],
+      where: { id: walletId },
+    });
 
-  //   if (senderUser.profile.wallet.id !== input.senderWalletId) {
-  //     // TODO: check if senderWalletId is from organization and currentUser is admin of it
-  //     throw new MethodNotAllowedException('User is not allowed.');
-  //   }
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found.');
+    }
 
-  //   const transaction = await this.walletTransactionRepository.create(input);
-  //   return await this.walletTransactionRepository.save(transaction);
-  // }
+    wallet.balance = wallet.transactions.reduce((sum, tx) => {
+      if (tx.type === TransactionType.TRANSFER_IN) {
+        return sum + tx.amount;
+      }
+
+      return (sum = tx.amount);
+    }, 0);
+
+    return wallet;
+  }
+
+  async deposit(input: WalletTransactionInput) {
+    const transaction = await this._prepareTransaction(input);
+    transaction.type = TransactionType.TRANSFER_IN;
+
+    await this.walletTransactionRepository.save(transaction);
+
+    return transaction;
+  }
+
+  async charge(input: WalletTransactionInput) {
+    const transaction = await this._prepareTransaction(input);
+    transaction.type = TransactionType.TRANSFER_OUT;
+
+    await this.walletTransactionRepository.save(transaction);
+
+    return transaction;
+  }
+
+  protected async _prepareTransaction(input: WalletTransactionInput) {
+    const { walletId, ...transactionData } = input;
+    const wallet = await this.walletRepository.findOne({
+      where: {
+        id: walletId,
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found.');
+    }
+
+    const transaction =
+      await this.walletTransactionRepository.create(transactionData);
+    transaction.wallet = wallet;
+
+    return transaction;
+  }
 }

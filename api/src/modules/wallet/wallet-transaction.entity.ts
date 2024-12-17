@@ -1,20 +1,22 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
-import { Wallet } from './wallet.entity';
 import BaseAuditEntity from 'src/common/entities/base-audit.entity';
+import { TransactionType } from './enums/transaction-type.enum';
+import { Wallet } from './wallet.entity';
 
 @Entity()
 export class WalletTransaction extends BaseAuditEntity {
   @ManyToOne(() => Wallet, (wallet) => wallet.transactions)
-  public profile: Wallet;
+  public wallet: Wallet;
 
-  @ManyToOne(() => Wallet, (wallet) => wallet.transactions, { nullable: true })
-  public sender: Wallet;
+  @Column({
+    type: 'enum',
+    enum: TransactionType,
+  })
+  type: TransactionType;
 
   @Column({ type: 'int' })
   public amount: number;
 
-  @Column()
+  @Column({ nullable: true })
   public comment: string;
-
-  // TODO: after save - update both wallet balances...
 }

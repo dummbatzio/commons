@@ -12,7 +12,7 @@ import type { Task } from '~/types';
 import { useConfetti } from '~/composables/useConfetti';
 import { toast } from '../ui/toast';
 
-const { profile } = useUser();
+const { profile, fetchProfile } = useUser();
 const { page } = usePagination();
 const limit = 100;
 const { data, refresh } = await useAsyncData("my-tasks", async () => GqlGetMyPaginatedTasks({
@@ -48,15 +48,16 @@ const onComplete = async (task: Task) => {
         });
 
         if (completeTask.status === TaskStatus.DONE) {
-            fireCanon()
+            fireCanon();
             toast({
                 title: "Yay!",
                 description: `Du hast ${task.title} abgeschlossen. Die entsprechenden Repro-Coins wurden dir gutgeschrieben.`
-            })
-            await refresh()
+            });
+            await fetchProfile();
+            await refresh();
         }
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 }
 const onResign = async (task: Task) => { }

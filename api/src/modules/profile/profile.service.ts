@@ -28,6 +28,7 @@ export class ProfileService {
 
   async getById(profileId: string) {
     return await this.profileRepository.findOne({
+      relations: ['wallet'],
       where: {
         id: profileId,
       },
@@ -35,13 +36,23 @@ export class ProfileService {
   }
 
   async getByUserId(userId: string) {
-    return await this.profileRepository.findOne({
+    const profile = await this.profileRepository.findOne({
+      relations: ['wallet'],
       where: {
         user: {
           id: userId,
         },
       },
     });
+
+    const wallet = await this.walletService.getWalletWithBalance(
+      profile.wallet?.id,
+    );
+
+    return {
+      ...profile,
+      wallet,
+    };
   }
 
   async createEmptyProfile(type: ProfileType): Promise<Profile> {

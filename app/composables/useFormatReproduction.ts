@@ -1,14 +1,24 @@
 export const useFormatReproduction = (
   amountInMinutes: number,
-  showMinutes?: boolean
+  options?: {
+    showMinutes?: boolean;
+    showUnit?: boolean;
+  }
 ) => {
-  if (showMinutes && amountInMinutes < 60) {
-    return `${amountInMinutes} Minuten`;
+  const amount = new Intl.NumberFormat("de-DE", {
+    maximumFractionDigits: 2,
+  }).format(amountInMinutes / 60);
+
+  if (options?.showMinutes) {
+    if (amountInMinutes < 60) {
+      return `${amountInMinutes} Minuten`;
+    }
+
+    return `${amount} ${amountInMinutes === 60 ? "Stunde" : "Stunden"}`;
   }
 
-  return `${new Intl.NumberFormat("de-DE", {
-    maximumFractionDigits: 2,
-  }).format(
-    amountInMinutes / 60
-  )} ${amountInMinutes === 60 ? "Stunde" : "Stunden"}`;
+  return (
+    amount +
+    (options?.showUnit ? ` ${amountInMinutes === 60 ? "Repro" : "Repros"}` : "")
+  );
 };

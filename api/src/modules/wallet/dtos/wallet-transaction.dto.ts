@@ -1,14 +1,11 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseAuditDto } from 'src/common/dtos/base-audit.dto';
-import { WalletDto } from './wallet.dto';
+import { TransactionType } from '../enums/transaction-type.enum';
 
 @ObjectType()
 export class WalletTransactionDto extends BaseAuditDto {
   @Field()
-  public receiver: WalletDto;
-
-  @Field({nullable: true})
-  public sender: WalletDto;
+  public type: TransactionType;
 
   @Field(() => Int)
   public amount: number;

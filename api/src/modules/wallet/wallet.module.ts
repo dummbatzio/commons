@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Wallet } from './wallet.entity';
 import { WalletTransaction } from './wallet-transaction.entity';
 import { WalletResolver } from './wallet.resolver';
-import { IamModule } from '../iam/iam.module';
 import { WalletService } from './wallet.service';
 
 @Module({

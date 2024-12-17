@@ -9,17 +9,35 @@ type FileDto {
   mimetype: String
 }
 
-type ProfileDto {
+type WalletTransactionDto {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   type: String!
+  amount: Int!
+  comment: String
 }
 
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+type WalletDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  balance: Int!
+  transactions: [WalletTransactionDto!]
+}
+
+type ProfileDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
+  wallet: WalletDto
+}
 
 type UserDto {
   id: ID!
@@ -46,21 +64,6 @@ type SessionDto {
   accessToken: String!
   refreshToken: String!
   user: UserDto!
-}
-
-type WalletDto {
-  id: ID!
-  balance: Int!
-}
-
-type WalletTransactionDto {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  receiver: WalletDto!
-  sender: WalletDto
-  amount: Int!
-  comment: String
 }
 
 type OrganizationDto {
@@ -123,6 +126,8 @@ type PaginatedTasksDto {
 
 type Query {
   me: UserDto!
+  profile(id: String!): ProfileDto!
+  myProfile: ProfileDto!
   myOrganizations: [OrganizationDto!]!
   tasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
   myTasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
@@ -140,7 +145,8 @@ type Mutation {
   signIn(input: SignInInput!): SessionDto!
   refreshTokens(token: String!): TokensDto!
   updateProfile(input: ProfileInput!): ProfileDto!
-  donate(input: WalletTransactionInput!): WalletTransactionDto!
+  deposit(input: WalletTransactionInput!): WalletTransactionDto!
+  charge(input: WalletTransactionInput!): WalletTransactionDto!
   createOrganization(input: OrganizationInput!): OrganizationDto!
   updateOrganization(input: OrganizationInput!): OrganizationDto!
   addOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
@@ -170,8 +176,7 @@ input ProfileInput {
 }
 
 input WalletTransactionInput {
-  receiverWalletId: ID!
-  senderWalletId: ID!
+  walletId: ID!
   amount: Int!
   comment: String
 }
