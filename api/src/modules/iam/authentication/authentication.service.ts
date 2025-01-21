@@ -14,11 +14,11 @@ import {
   InvalidatedRefreshTokenError,
   RefreshTokenIdsStorage,
 } from './refresh-token-ids.storage';
-import { UserService } from '../user/user.service';
 import { RefreshTokenIdData } from '../interfaces/refresh-token-id-data.interface';
-import User from '../user/user.entity';
 import { SignUpInput } from './dto/sign-up.input';
 import { SignInInput } from './dto/sign-in.input';
+import { UserService } from 'src/modules/user/user.service';
+import User from 'src/modules/user/user.entity';
 
 @Injectable()
 export class AuthenticationService {

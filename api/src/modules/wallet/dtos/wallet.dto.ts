@@ -4,7 +4,7 @@ import { WalletTransactionDto } from './wallet-transaction.dto';
 
 @ObjectType()
 export class WalletDto extends BaseAuditDto {
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   public balance: number;
 
   @Field(() => [WalletTransactionDto], { nullable: true })

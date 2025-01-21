@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { UserDto } from '../../user/dto/user.dto';
 import { TokensDto } from './tokens.dto';
+import { UserDto } from 'src/modules/user/dto/user.dto';
 
 @ObjectType()
 export class SessionDto extends TokensDto {

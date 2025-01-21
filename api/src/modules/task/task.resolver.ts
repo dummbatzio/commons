@@ -78,7 +78,7 @@ export class TaskResolver {
     @Args('input') input: AssignmentInput,
     @ActiveUser() user: ActiveUserData,
   ) {
-    await this.assignmentService.assignToUser(input, user);
+    await this.assignmentService.assignToCurrentUser(input, user);
     return true;
   }
 

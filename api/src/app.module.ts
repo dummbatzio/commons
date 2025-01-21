@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from './common/database/redis.module';
 import * as Joi from '@hapi/joi';
 import { DatabaseModule } from './common/database/database.module';
-import { ProfileModule } from './modules/profile/profile.module';
 import { join } from 'path';
 import { FileModule } from './modules/file/file.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -14,6 +13,7 @@ import { OrganizationModule } from './modules/organization/organization.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { TaskModule } from './modules/task/task.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -44,8 +44,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
     DatabaseModule,
     RedisModule,
+    UserModule,
     IamModule,
-    ProfileModule,
     FileModule,
     OrganizationModule,
     WalletModule,

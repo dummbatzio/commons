@@ -11,7 +11,4 @@ fragment UserFields on UserDto {
     ...FileFields
   }
   visibility
-  profile {
-    ...ProfileFields
-  }
 }

@@ -9,6 +9,4 @@ export class Wallet extends BaseAuditEntity {
     (walletTransaction) => walletTransaction.wallet,
   )
   public transactions: WalletTransaction[];
-
-  public balance: number;
 }

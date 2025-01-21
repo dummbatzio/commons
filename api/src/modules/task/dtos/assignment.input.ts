@@ -3,7 +3,7 @@ import { Field, InputType } from '@nestjs/graphql';
 @InputType()
 export class AssignmentInput {
   @Field()
-  public profileId: string;
+  public userId: string;
 
   @Field()
   public taskId: string;

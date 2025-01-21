@@ -5,20 +5,17 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-
-import { UserService } from '../iam/user/user.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { Assignment } from './assignment.entity';
 import { TaskStatus } from './enums/task-status.enum';
 import { AssignmentInput } from './dtos/assignment.input';
 import { TaskType } from './enums/task-type.enum';
 import { Task } from './task.entity';
-import { ProfileService } from '../profile/profile.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AssignmentService {
   constructor(
-    private readonly profileService: ProfileService,
     private readonly userService: UserService,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -26,7 +23,10 @@ export class AssignmentService {
     private assignmentRepository: Repository<Assignment>,
   ) {}
 
-  async assignToUser(input: AssignmentInput, currentUser: ActiveUserData) {
+  async assignToCurrentUser(
+    input: AssignmentInput,
+    currentUser: ActiveUserData,
+  ) {
     const user = await this.userService.findOneBy({
       id: currentUser.sub,
     });
@@ -34,21 +34,11 @@ export class AssignmentService {
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-    if (user.profile.id !== input.profileId) {
-      throw new MethodNotAllowedException(
-        'User is not allowed to take actions for profile.',
-      );
-    }
 
-    return await this.assignToProfile(input);
+    return await this.assignToUser(input, user.id);
   }
 
-  async assignToProfile(input: AssignmentInput) {
-    const profile = await this.profileService.getById(input.profileId);
-    if (!profile) {
-      throw new NotFoundException('Profile not found.');
-    }
-
+  async assignToUser(input: AssignmentInput, userId: string) {
     const task = await this.taskRepository.findOne({
       relations: ['series'],
       where: {
@@ -64,17 +54,13 @@ export class AssignmentService {
 
     const assignmentsData = [
       {
-        profileId: profile.id,
-        // profile,
+        userId,
         taskId: task.id,
-        // task,
       },
       ...(task.type === TaskType.SERIES && task.series?.length
         ? task.series.map((s: any) => ({
-            profileId: profile.id,
-            // profile,
+            userId,
             taskId: s.id,
-            // task: s,
           }))
         : []),
     ];

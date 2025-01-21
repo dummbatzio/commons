@@ -12,7 +12,7 @@ import type { Task } from '~/types';
 import { useConfetti } from '~/composables/useConfetti';
 import { toast } from '../ui/toast';
 
-const { profile, fetchProfile } = useUser();
+const { user, fetch: fetchUser } = useUser();
 const { page } = usePagination();
 const limit = 100;
 const { data, refresh } = await useAsyncData("my-tasks", async () => GqlGetMyPaginatedTasks({
@@ -53,7 +53,7 @@ const onComplete = async (task: Task) => {
                 title: "Yay!",
                 description: `Du hast ${task.title} abgeschlossen. Die entsprechenden Repro-Coins wurden dir gutgeschrieben.`
             });
-            await fetchProfile();
+            await fetchUser();
             await refresh();
         }
     } catch (err) {
@@ -65,26 +65,28 @@ const onResign = async (task: Task) => { }
 
 <template>
     <div>
-        <div v-if="myTasks?.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <TaskCard v-for="task in myTasks" :task="task">
-                <template #actions v-if="profile">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" class="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
-                                <EllipsisVertical class="h-4 w-4" />
-                                <span class="sr-only">Kontextmenü</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-max max-w-64">
-                            <DropdownMenuItem @click="onComplete(task)">Aufgabe abschließen</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem @click="onResign(task)">
-                                Von Aufgabe zurücktreten
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </template>
-            </TaskCard>
+        <div v-if="myTasks?.length" class="grid gap-4 -my-6">
+            <template v-for="task in myTasks">
+                <AssignmentListItem :task="task">
+                    <template #actions v-if="user">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button variant="ghost" class="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
+                                    <EllipsisVertical class="h-4 w-4" />
+                                    <span class="sr-only">Kontextmenü</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-max max-w-64">
+                                <DropdownMenuItem @click="onComplete(task)">Aufgabe abschließen</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem @click="onResign(task)">
+                                    Von Aufgabe zurücktreten
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </template>
+                </AssignmentListItem>
+            </template>
         </div>
         <p v-else class="text-sm">Du hast aktuell keine Aufgaben.</p>
     </div>

@@ -1,7 +1,8 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { Organization } from './organization.entity';
-import User from '../iam/user/user.entity';
 import BaseAuditEntity from 'src/common/entities/base-audit.entity';
+import User from '../user/user.entity';
+import { OrganizationMemberRole } from './enums/organization-member-role.enum';
 
 @Entity()
 export class OrganizationMember extends BaseAuditEntity {
@@ -11,6 +12,10 @@ export class OrganizationMember extends BaseAuditEntity {
   @ManyToOne(() => Organization, (organization) => organization.members)
   public organization: Organization;
 
-  @Column({ default: false })
-  public isAdmin: boolean;
+  @Column({
+    type: 'enum',
+    enum: OrganizationMemberRole,
+    default: OrganizationMemberRole.MEMBER,
+  })
+  public role: OrganizationMemberRole;
 }

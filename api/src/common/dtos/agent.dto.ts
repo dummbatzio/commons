@@ -3,6 +3,7 @@ import { BaseAuditDto } from './base-audit.dto';
 import { FileDto } from 'src/modules/file/dtos/file.dto';
 import { VerificationStatus } from '../enums/verification-status.enum';
 import { Visibility } from '../enums/visibility.enum';
+import { BaseDto } from './base.dto';
 
 @ObjectType()
 export class AgentoDto extends BaseAuditDto {
@@ -14,4 +15,7 @@ export class AgentoDto extends BaseAuditDto {
 
   @Field()
   public visibility: Visibility;
+
+  @Field()
+  public wallet: BaseDto;
 }

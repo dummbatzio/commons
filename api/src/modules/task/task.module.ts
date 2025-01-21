@@ -9,15 +9,13 @@ import { TaskLink } from './task-link.entity';
 import { TaskLinkService } from './task-link.service';
 import { Assignment } from './assignment.entity';
 import { AssignmentService } from './assignment.service';
-import { IamModule } from '../iam/iam.module';
-import { ProfileModule } from '../profile/profile.module';
 import { WalletModule } from '../wallet/wallet.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task, TaskCategory, TaskLink, Assignment]),
-    IamModule,
-    ProfileModule,
+    UserModule,
     WalletModule,
   ],
   providers: [

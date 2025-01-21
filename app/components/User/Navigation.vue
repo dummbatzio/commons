@@ -36,8 +36,8 @@ const { user } = useUserSession();
                     </NuxtLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem as-child>
-                    <NuxtLink to="/account/settings">
-                        Settings
+                    <NuxtLink to="/account/wallet">
+                        Reprostunden-Konto
                     </NuxtLink>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

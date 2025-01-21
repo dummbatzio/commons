@@ -5,11 +5,11 @@ import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { ActiveUser } from './decorators/active-user.decorator';
 import { ActiveUserData } from '../interfaces/active-user-data.interface';
-import { UserService } from '../user/user.service';
 import { SignInInput } from './dto/sign-in.input';
-import { UserDto } from '../user/dto/user.dto';
 import { SessionDto } from './dto/session.dto';
 import { TokensDto } from './dto/tokens.dto';
+import { UserService } from 'src/modules/user/user.service';
+import { UserDto } from 'src/modules/user/dto/user.dto';
 
 @Auth(AuthType.None)
 @Resolver()

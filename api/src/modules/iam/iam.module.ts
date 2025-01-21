@@ -11,21 +11,15 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthenticationResolver } from './authentication/authentication.resolver';
 import { RedisModule } from 'src/common/database/redis.module';
 import { RefreshTokenIdsStorage } from './authentication/refresh-token-ids.storage';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import User from './user/user.entity';
-import { ProfileModule } from '../profile/profile.module';
-import { UserService } from './user/user.service';
-import { UserController } from './user/user.controller';
 import { FileModule } from '../file/file.module';
-import Agent from 'src/common/entities/agent.entity';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
-    TypeOrmModule.forFeature([Agent, User]),
     RedisModule,
-    ProfileModule,
+    UserModule,
     FileModule,
   ],
   providers: [
@@ -41,9 +35,6 @@ import Agent from 'src/common/entities/agent.entity';
     AuthenticationService,
     AuthenticationResolver,
     RefreshTokenIdsStorage,
-    UserService,
   ],
-  exports: [UserService],
-  controllers: [UserController],
 })
 export class IamModule {}

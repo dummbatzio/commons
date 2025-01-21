@@ -19,15 +19,15 @@ import { TaskLinkService } from './task-link.service';
 import { TaskFilterArgs } from './dtos/task-filter.args';
 import { AssignmentService } from './assignment.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
-import { ProfileService } from '../profile/profile.service';
 import { WalletService } from '../wallet/wallet.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class TaskService {
   private readonly logger = new Logger(TaskService.name, { timestamp: true });
 
   constructor(
-    private readonly profileService: ProfileService,
+    private readonly userService: UserService,
     private readonly linkService: TaskLinkService,
     private readonly walletService: WalletService,
     private readonly assignmentService: AssignmentService,
@@ -47,15 +47,10 @@ export class TaskService {
     args: TaskFilterArgs = { skip: 0, take: 25 },
     userId: string,
   ) {
-    const profile = await this.profileService.getByUserId(userId);
-    if (!profile) {
-      throw new NotFoundException('Profile not found.');
-    }
-
     const query = await this.getAllTasksQuery(args);
 
-    query.andWhere('assignment.profileId = :profileId', {
-      profileId: profile.id,
+    query.andWhere('assignment.userId = :userId', {
+      userId,
     });
 
     return await query.getManyAndCount();
@@ -185,12 +180,11 @@ export class TaskService {
       throw new NotFoundException('Task not found.');
     }
 
-    if (currentUser) {
-      const userProfile = await this.profileService.getByUserId(
-        currentUser.sub,
-      );
-
-      if (task.assignments.every((a) => a.profileId !== userProfile?.id)) {
+    const user = await this.userService.findOneBy({
+      id: currentUser.sub,
+    });
+    if (user) {
+      if (task.assignments.every((a) => a.userId !== user.id)) {
         throw new MethodNotAllowedException(
           'User is not allowed to complete this task.',
         );
@@ -200,7 +194,7 @@ export class TaskService {
       const amount = task.expense * task.factor;
       this.walletService.deposit({
         amount,
-        walletId: userProfile.wallet?.id,
+        walletId: user.wallet.id,
         comment: `Aufgabe #${task.id}: ${task.title}`,
       });
     }
@@ -303,14 +297,17 @@ export class TaskService {
       });
       series.push(await this.taskRepository.save(taskSeriesItem));
 
-      // if series is assigned to profile, assign the new task as well
+      // if series is assigned to user, assign the new task as well
       if (assignments?.length) {
         assignments.map(
           async (assignment) =>
-            await this.assignmentService.assignToProfile({
-              taskId: taskSeriesItem.id,
-              profileId: assignment.profileId,
-            }),
+            await this.assignmentService.assignToUser(
+              {
+                taskId: taskSeriesItem.id,
+                userId: assignment.userId,
+              },
+              assignment.userId,
+            ),
         );
       }
     }

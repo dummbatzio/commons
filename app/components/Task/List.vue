@@ -19,10 +19,10 @@ const tasks = computed(() => data.value?.tasks.items)
 const route = useRoute();
 watch(() => route.query, () => refresh())
 
-const { profile } = useUser()
+const { user } = useUser()
 const loading = ref(false);
 const onAssign = async (task: Task) => {
-    if (!profile.value?.id || !task?.id) {
+    if (!user.value?.id || !task?.id) {
         return;
     }
 
@@ -31,7 +31,7 @@ const onAssign = async (task: Task) => {
     try {
         await GqlAssignTask({
             input: {
-                profileId: profile.value.id,
+                userId: user.value.id,
                 taskId: task.id
             }
         })
@@ -53,7 +53,7 @@ const onAssign = async (task: Task) => {
 <template>
     <div v-if="tasks?.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <TaskCard v-for="task in tasks" :task="task">
-            <template #actions v-if="profile && task.status === 'open'">
+            <template #actions v-if="user && task.status === 'open'">
                 <Button @click="onAssign(task)" :disabled="loading">Annehmen</Button>
             </template>
         </TaskCard>

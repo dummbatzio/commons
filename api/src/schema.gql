@@ -2,11 +2,47 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type TokensDto {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type BaseDto {
+  id: ID!
+}
+
 type FileDto {
   id: ID!
   filename: String!
   path: String!
   mimetype: String
+}
+
+type UserDto {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  avatar: FileDto
+  status: String!
+  visibility: String!
+  wallet: BaseDto!
+  firstname: String
+  lastname: String
+  bio: String
+  phone: String
+  username: String!
+  email: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type SessionDto {
+  accessToken: String!
+  refreshToken: String!
+  user: UserDto!
 }
 
 type WalletTransactionDto {
@@ -18,52 +54,12 @@ type WalletTransactionDto {
   comment: String
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type WalletDto {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  balance: Int!
+  balance: Int
   transactions: [WalletTransactionDto!]
-}
-
-type ProfileDto {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  type: String!
-  wallet: WalletDto
-}
-
-type UserDto {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  avatar: FileDto
-  status: String!
-  visibility: String!
-  firstname: String
-  lastname: String
-  bio: String
-  phone: String
-  username: String!
-  email: String!
-  profile: ProfileDto
-}
-
-type TokensDto {
-  accessToken: String!
-  refreshToken: String!
-}
-
-type SessionDto {
-  accessToken: String!
-  refreshToken: String!
-  user: UserDto!
 }
 
 type OrganizationDto {
@@ -73,9 +69,9 @@ type OrganizationDto {
   avatar: FileDto
   status: String!
   visibility: String!
+  wallet: BaseDto!
   name: String!
   description: String
-  profileImage: FileDto
 }
 
 type OrganizationMemberDto {
@@ -83,7 +79,7 @@ type OrganizationMemberDto {
   createdAt: DateTime!
   updatedAt: DateTime!
   user: UserDto!
-  isAdmin: Boolean!
+  role: String!
 }
 
 type TaskCategoryDto {
@@ -125,10 +121,11 @@ type PaginatedTasksDto {
 }
 
 type Query {
-  me: UserDto!
-  profile(id: String!): ProfileDto!
-  myProfile: ProfileDto!
+  myWallet: WalletDto!
+  userWallet(userId: String!): WalletDto!
+  organizationWallet(organizationId: String!): WalletDto!
   myOrganizations: [OrganizationDto!]!
+  me: UserDto!
   tasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
   myTasks(skip: Int! = 0, take: Int! = 25, where: TaskFilterWhereInput): PaginatedTasksDto!
   taskCategories(parentId: String, nameLike: String): [TaskCategoryDto!]!
@@ -141,10 +138,6 @@ input TaskFilterWhereInput {
 }
 
 type Mutation {
-  signUp(input: SignUpInput!): UserDto!
-  signIn(input: SignInInput!): SessionDto!
-  refreshTokens(token: String!): TokensDto!
-  updateProfile(input: ProfileInput!): ProfileDto!
   deposit(input: WalletTransactionInput!): WalletTransactionDto!
   charge(input: WalletTransactionInput!): WalletTransactionDto!
   createOrganization(input: OrganizationInput!): OrganizationDto!
@@ -152,27 +145,15 @@ type Mutation {
   addOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
   updateOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
   removeOrganizationMember(input: OrganizationMemberInput!): OrganizationMemberDto!
+  signUp(input: SignUpInput!): UserDto!
+  signIn(input: SignInInput!): SessionDto!
+  refreshTokens(token: String!): TokensDto!
   createTask(input: TaskInput!): TaskDto!
   updateTask(input: TaskInput!): TaskDto!
   deleteTask(id: ID!): Boolean!
   assignTask(input: AssignmentInput!): Boolean!
   completeTask(taskId: String!): TaskDto!
   createTaskCategory(input: TaskCategoryInput!): TaskCategoryDto!
-}
-
-input SignUpInput {
-  username: String!
-  email: String!
-  password: String!
-}
-
-input SignInInput {
-  email: String!
-  password: String!
-}
-
-input ProfileInput {
-  id: String
 }
 
 input WalletTransactionInput {
@@ -187,13 +168,23 @@ input OrganizationInput {
   visibility: String
   name: String
   description: String
-  profileImageId: ID
 }
 
 input OrganizationMemberInput {
   userId: ID!
   organizationId: ID!
   isAdmin: Boolean! = false
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
 }
 
 input TaskInput {
@@ -217,7 +208,7 @@ input TaskLinkInput {
 }
 
 input AssignmentInput {
-  profileId: String!
+  userId: String!
   taskId: String!
 }
 

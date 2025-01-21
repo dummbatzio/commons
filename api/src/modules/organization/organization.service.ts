@@ -1,39 +1,41 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from '../iam/user/user.service';
 import { Organization } from './organization.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { OrganizationMember } from './organization-member.entity';
 import { FileService } from '../file/file.service';
 import { ActiveUserData } from '../iam/interfaces/active-user-data.interface';
 import { OrganizationInput } from './dtos/organization.input';
 import { OrganizationMemberInput } from './dtos/organization-member.input';
-import { ProfileService } from '../profile/profile.service';
 import { WalletService } from '../wallet/wallet.service';
-import { ProfileType } from '../profile/enums/profile-type.enum';
-import User from '../iam/user/user.entity';
 import { AgentService } from 'src/common/services/agent.service';
 import { VerificationStatus } from 'src/common/enums/verification-status.enum';
+import { UserService } from '../user/user.service';
+import User from '../user/user.entity';
+import { OrganizationMemberRole } from './enums/organization-member-role.enum';
 
 @Injectable()
 export class OrganizationService implements AgentService<Organization> {
   constructor(
-    private readonly userService: UserService,
-    private readonly profileService: ProfileService,
     @InjectRepository(Organization)
     private organizationRepository: Repository<Organization>,
     @InjectRepository(OrganizationMember)
     private organizationMemberRepository: Repository<OrganizationMember>,
     private readonly fileService: FileService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
+    @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
   ) {}
 
   async getOrganizatonById(organizationId: string) {
-    return await this.organizationRepository.findOneBy({
+    return this.findOneBy({
       id: organizationId,
     });
   }
@@ -56,6 +58,14 @@ export class OrganizationService implements AgentService<Organization> {
     });
   }
 
+  async findOneBy(
+    where: FindOptionsWhere<Organization> | FindOptionsWhere<Organization>[],
+  ) {
+    return await this.organizationRepository.findOne({
+      where,
+    });
+  }
+
   async createOrganization(
     input: OrganizationInput,
     currentUser: ActiveUserData,
@@ -66,10 +76,9 @@ export class OrganizationService implements AgentService<Organization> {
     }
 
     const organization = this.organizationRepository.create(input);
-    const profile = await this.profileService.createEmptyProfile(
-      ProfileType.ORGANIZATION,
-    );
-    organization.profile = profile;
+
+    const wallet = await this.walletService.createEmptyWallet();
+    organization.wallet = wallet;
 
     await this.organizationRepository.save(organization);
 
@@ -97,7 +106,10 @@ export class OrganizationService implements AgentService<Organization> {
     }
 
     if (
-      organization.members.find((m) => m.user.id === adminUser.id && m.isAdmin)
+      organization.members.find(
+        (m) =>
+          m.user.id === adminUser.id && m.role === OrganizationMemberRole.ADMIN,
+      )
     ) {
       const transformedInput = await this.transformInput(input);
       Object.assign(organization, transformedInput);
@@ -134,7 +146,10 @@ export class OrganizationService implements AgentService<Organization> {
     }
 
     if (
-      organization.members.find((m) => m.user.id === adminUser.id && m.isAdmin)
+      organization.members.find(
+        (m) =>
+          m.user.id === adminUser.id && m.role === OrganizationMemberRole.ADMIN,
+      )
     ) {
       return await this._addOrganizationMember(
         member,
@@ -168,7 +183,8 @@ export class OrganizationService implements AgentService<Organization> {
 
     if (
       organizationMember.organization.members.find(
-        (m) => m.user.id === adminUser.id && m.isAdmin,
+        (m) =>
+          m.user.id === adminUser.id && m.role === OrganizationMemberRole.ADMIN,
       )
     ) {
       Object.assign(organizationMember, input);
@@ -204,7 +220,8 @@ export class OrganizationService implements AgentService<Organization> {
 
     if (
       organizationMember.organization.members.find(
-        (m) => m.user.id === adminUser.id && m.isAdmin,
+        (m) =>
+          m.user.id === adminUser.id && m.role === OrganizationMemberRole.ADMIN,
       )
     ) {
       return await this.organizationMemberRepository.delete(organizationMember);
@@ -223,27 +240,28 @@ export class OrganizationService implements AgentService<Organization> {
     const member = this.organizationMemberRepository.create({
       user,
       organization,
-      isAdmin,
+      ...(isAdmin ? { role: OrganizationMemberRole.ADMIN } : {}),
     });
 
     return this.organizationMemberRepository.save(member);
   }
 
   async transformInput(input: OrganizationInput) {
-    const { profileImageId, ...rest } = input;
-    let profileImage = null;
+    const { avatarId, ...rest } = input;
+    let transformedInput: any = rest;
 
-    if (profileImageId) {
-      profileImage = await this.fileService.findOneById(profileImageId);
-      if (!profileImage) {
-        throw new NotFoundException('Cannot find Profile Image.');
+    if (avatarId) {
+      const avatar = await this.fileService.findOneById(avatarId);
+      if (!avatar) {
+        throw new NotFoundException('Cannot find Avatar.');
       }
+      transformedInput = {
+        ...transformedInput,
+        avatar,
+      };
     }
 
-    return {
-      ...rest,
-      profileImage,
-    };
+    return transformedInput;
   }
 
   async verify(id: string): Promise<Organization> {

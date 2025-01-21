@@ -1,8 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Visibility } from '../enums/visibility.enum';
 import { VerificationStatus } from '../enums/verification-status.enum';
 import BaseAuditEntity from './base-audit.entity';
 import { File } from 'src/modules/file/file.entity';
+import { Wallet } from 'src/modules/wallet/wallet.entity';
 
 @Entity()
 abstract class Agent extends BaseAuditEntity {
@@ -19,6 +20,10 @@ abstract class Agent extends BaseAuditEntity {
 
   @Column({ type: 'varchar', length: 100, default: Visibility.PRIVATE })
   visibility: Visibility;
+
+  @OneToOne(() => Wallet, { nullable: true, eager: true })
+  @JoinColumn()
+  wallet: Wallet;
 }
 
 export default Agent;

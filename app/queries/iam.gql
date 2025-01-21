@@ -27,4 +27,8 @@ query Me {
   me {
     ...UserFields
   }
+  myWallet {
+    id
+    balance
+  }
 }

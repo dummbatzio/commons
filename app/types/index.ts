@@ -16,27 +16,23 @@ export interface User {
   firstname?: string | null;
   lastname?: string | null;
   bio?: string | null;
-  profile?: Profile | null;
   visibility: string;
-}
-
-export interface Profile {
-  id: string;
-  type: string;
   wallet?: Wallet | null;
 }
 
 export interface Wallet {
   id: string;
-  balance: number;
-  transactions?: WalletTransaction;
+  balance?: number | null;
+  transactions?: WalletTransaction[] | null;
 }
 
 export interface WalletTransaction {
   id: string;
   type: string;
   amount: number;
-  comment: string;
+  comment?: string | null;
+  createdAt?: any | null;
+  updatedAt?: any | null;
 }
 
 export interface TaskCategory {
